@@ -1,0 +1,1 @@
+Multi-touch randomizer for choosing individuals, forming groups, or play order.

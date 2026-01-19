@@ -40,6 +40,26 @@ This is an Android application. You can build it from source using Android Studi
 ./gradlew assembleDebug
 ```
 
+## Development
+
+### Fastlane
+
+This project uses [fastlane](https://fastlane.tools/) to automate testing and deployment.
+
+To get started:
+1. Install Ruby (if not already installed).
+2. Install dependencies:
+   ```bash
+   bundle install
+   ```
+
+Available lanes:
+- `bundle exec fastlane test`: Runs all unit tests.
+- `bundle exec fastlane beta`: Builds the release APK and uploads it to the Play Store Internal track.
+- `bundle exec fastlane deploy`: Builds the release App Bundle and uploads it to the Play Store Production track.
+
+Note: Deployment lanes require a valid Google Play Service Account JSON key, which should be configured in `fastlane/Appfile` or via environment variables.
+
 ## License
 
 Kmwazi is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.

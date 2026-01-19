@@ -39,12 +39,21 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.4'
+          bundler-cache: true
+
+      - name: bundle install
+        run: bundle install
+
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
       # Run Tests Build
-      - name: Run gradle tests
-        run: ./gradlew test
+      - name: Run tests with Fastlane
+        run: bundle exec fastlane test
 
       # Run Build Project
       - name: Build gradle project

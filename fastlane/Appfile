@@ -1,0 +1,2 @@
+json_key_file("") # Path to the json secret file - prioritized over the `GOOGLE_AUTH_JSON` env var
+package_name("com.github.asm0dey.kmwazi") # e.g. com.krausefx.app

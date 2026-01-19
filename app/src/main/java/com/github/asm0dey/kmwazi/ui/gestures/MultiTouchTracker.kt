@@ -50,6 +50,18 @@ suspend fun PointerInputScope.trackMultiTouch(
 
                 changes.forEach { change ->
                     val id = change.id.value
+                    if (change.isConsumed) {
+                        // If a child (like a button) consumed the touch, we should remove it from our tracking if it was there
+                        if (points.remove(id) != null) {
+                            listener.onFingerUp(id)
+                            longPressJob?.cancel()
+                            if (points.isEmpty()) {
+                                listener.onAllFingersUp()
+                            }
+                        }
+                        return@forEach
+                    }
+
                     if (change.changedToDown()) {
                         points[id] = change.position
                         listener.onFingerDown(id, change.position)
