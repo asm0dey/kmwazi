@@ -35,21 +35,21 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
             onClick = { onNavigate(Routes.Touch) },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Icon(Icons.Default.PlayArrow, contentDescription = null)
+            Icon(Icons.Default.PlayArrow, contentDescription = "Start game")
             Text(" Start ", style = MaterialTheme.typography.labelLarge)
         }
         Button(
             onClick = { onNavigate(Routes.Settings) },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Icon(Icons.Default.Settings, contentDescription = null)
+            Icon(Icons.Default.Settings, contentDescription = "Settings")
             Text(" Settings ", style = MaterialTheme.typography.labelLarge)
         }
         Button(
             onClick = { onNavigate(Routes.Help) },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Icon(Icons.AutoMirrored.Filled.Help, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.Help, contentDescription = "Help")
             Text(" Help ", style = MaterialTheme.typography.labelLarge)
         }
     }

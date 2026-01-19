@@ -36,6 +36,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.asm0dey.kmwazi.di.ServiceLocator.settingsRepository
@@ -43,6 +47,7 @@ import com.github.asm0dey.kmwazi.domain.Mode
 import com.github.asm0dey.kmwazi.ui.PaletteRepository
 import com.github.asm0dey.kmwazi.ui.draw.FingerCanvas
 import com.github.asm0dey.kmwazi.ui.draw.ResultOverlay
+import com.github.asm0dey.kmwazi.ui.gestures.TouchEventListener
 import com.github.asm0dey.kmwazi.ui.gestures.trackMultiTouch
 import com.github.asm0dey.kmwazi.viewmodel.TouchViewModel
 import kotlinx.coroutines.delay
@@ -98,6 +103,15 @@ fun TouchScreen(onBack: () -> Unit) {
         }
     }
 
+    val resultAnnouncement = remember(result) {
+        when (result) {
+            is com.github.asm0dey.kmwazi.domain.Result.One -> "Winner selected"
+            is com.github.asm0dey.kmwazi.domain.Result.Groups -> "Groups formed"
+            is com.github.asm0dey.kmwazi.domain.Result.Order -> "Order defined"
+            else -> ""
+        }
+    }
+
     // Pulsing animation for active points
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val pulseFactor by infiniteTransition.animateFloat(
@@ -136,14 +150,40 @@ fun TouchScreen(onBack: () -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .semantics {
+                liveRegion = LiveRegionMode.Polite
+                contentDescription = resultAnnouncement
+            }
             .pointerInput(Unit) {
-                trackMultiTouch(
-                    points = points,
-                    onChanged = { vm.updateActive(it) },
-                    onFingerAdded = {
+                trackMultiTouch(object : TouchEventListener {
+                    override fun onFingerDown(id: Long, position: Offset) {
+                        points[id] = position
+                        vm.updateActive(points.toMap())
                         haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                     }
-                )
+
+                    override fun onFingerMove(id: Long, position: Offset) {
+                        points[id] = position
+                        vm.updateActive(points.toMap())
+                    }
+
+                    override fun onFingerUp(id: Long) {
+                        points.remove(id)
+                        vm.updateActive(points.toMap())
+                    }
+
+                    override fun onAllFingersUp() {
+                        // All fingers removed, vm.updateActive already called in onFingerUp
+                    }
+
+                    override fun onLongPress() {
+                        if (vm.inputLocked.value) {
+                            vm.reset()
+                            points.clear()
+                            fingerColors.clear()
+                        }
+                    }
+                })
             }
     ) {
         // Mode Selector (Top Left)

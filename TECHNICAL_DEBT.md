@@ -80,9 +80,9 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 
 ### Gesture Handling Extraction
 - [x] Extract pointer tracking into reusable `pointerInput` helper
-- [ ] Create clear callbacks interface for touch events
-- [ ] Move long-press reset logic out of Canvas block
-- [ ] Implement higher-level gesture handler with clear states
+- [x] Create clear callbacks interface for touch events
+- [x] Move long-press reset logic out of Canvas block
+- [x] Implement higher-level gesture handler with clear states
 
 ### Theming Integration
 - [x] Extend `KmwaziTheme` to accept Palette parameter
@@ -91,7 +91,7 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 - [x] Set surface/background colors from palette
 - [x] Remove hardcoded `Color.Black` backgrounds
 - [x] Replace all hardcoded colors with `MaterialTheme.colorScheme` references
-- [ ] Test theme with all three palettes
+- [x] Test theme with all three palettes
 
 ### Drawing Optimization
 - [x] Extract number drawing into helper function
@@ -104,15 +104,15 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 ## Phase 3: Accessibility and UX Polish
 
 ### Semantics and Screen Readers
-- [ ] Add meaningful `contentDescription` for all interactive elements
-- [ ] Add semantics for mode selection controls
-- [ ] Announce results via Compose semantics (live region)
+- [x] Add meaningful `contentDescription` for all interactive elements
+- [x] Add semantics for mode selection controls
+- [x] Announce results via Compose semantics (live region)
 - [ ] Test with TalkBack enabled
 
 ### Contrast and Visual Accessibility
 - [ ] Validate contrast for all palettes (WCAG AA compliance)
 - [ ] Add high-contrast fallback palette
-- [ ] Ensure touch targets >= 48dp
+- [x] Ensure touch targets >= 48dp
 - [ ] Verify typography scales appropriately
 
 ### Haptic Feedback

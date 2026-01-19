@@ -26,6 +26,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.github.asm0dey.kmwazi.di.ServiceLocator.settingsRepository
@@ -63,8 +67,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                     modifier =
                         Modifier
                             .background(MaterialTheme.colorScheme.surface)
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
-                            .clickable { expandedState.value = true },
+                            .clickable(onClickLabel = "Select palette") { expandedState.value = true }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
                     // Show compact stripes next to the name to hint it is a selector
                     ColorStripes(colors = current.colors, modifier = Modifier.size(width = 60.dp, height = 24.dp))
@@ -115,12 +119,14 @@ fun SettingsScreen(onBack: () -> Unit) {
                     modifier = Modifier.size(48.dp),
                     shape = CircleShape,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-                ) { Text("-", style = MaterialTheme.typography.headlineSmall) }
+                ) {
+                    Text("-", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { contentDescription = "Decrease timeout" })
+                }
                 Text(
                     "${timeoutSecState.value}s",
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp).semantics { liveRegion = LiveRegionMode.Polite }
                 )
                 Button(
                     onClick = {
@@ -130,7 +136,9 @@ fun SettingsScreen(onBack: () -> Unit) {
                     modifier = Modifier.size(48.dp),
                     shape = CircleShape,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-                ) { Text("+", style = MaterialTheme.typography.headlineSmall) }
+                ) {
+                    Text("+", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { contentDescription = "Increase timeout" })
+                }
             }
         }
         Box(

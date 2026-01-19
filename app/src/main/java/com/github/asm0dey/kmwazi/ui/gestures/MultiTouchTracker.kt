@@ -6,37 +6,59 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
  * Helper to track multiple pointers and manage active points map.
- * Provides hooks for when fingers are added or removed.
  */
 suspend fun PointerInputScope.trackMultiTouch(
-    points: MutableMap<Long, Offset>,
-    onChanged: (Map<Long, Offset>) -> Unit,
-    onFingerAdded: (() -> Unit)? = null,
-    onFingerRemoved: (() -> Unit)? = null,
+    listener: TouchEventListener,
 ) {
-    awaitEachGesture {
-        while (true) {
-            val event = awaitPointerEvent(PointerEventPass.Main)
-            val changes = event.changes
-            if (changes.isEmpty()) break
+    val points = mutableMapOf<Long, Offset>()
+    coroutineScope {
+        var longPressJob: kotlinx.coroutines.Job? = null
 
-            changes.forEach { change ->
-                val id = change.id.value
-                if (change.changedToDown()) {
-                    points[id] = change.position
-                    onFingerAdded?.invoke()
-                } else if (change.changedToUp()) {
-                    if (points.remove(id) != null) {
-                        onFingerRemoved?.invoke()
+        awaitEachGesture {
+            while (true) {
+                val event = awaitPointerEvent(PointerEventPass.Main)
+                val changes = event.changes
+                if (changes.isEmpty()) break
+
+                changes.forEach { change ->
+                    val id = change.id.value
+                    if (change.changedToDown()) {
+                        points[id] = change.position
+                        listener.onFingerDown(id, change.position)
+
+                        if (points.size == 1) {
+                            longPressJob?.cancel()
+                            longPressJob = launch {
+                                delay(2000)
+                                listener.onLongPress()
+                            }
+                        } else {
+                            longPressJob?.cancel()
+                        }
+                    } else if (change.changedToUp()) {
+                        if (points.remove(id) != null) {
+                            listener.onFingerUp(id)
+                            longPressJob?.cancel()
+                            if (points.isEmpty()) {
+                                listener.onAllFingersUp()
+                            }
+                        }
+                    } else if (change.pressed) {
+                        val oldPos = points[id]
+                        if (oldPos != null && (change.position - oldPos).getDistanceSquared() > 100f) {
+                            longPressJob?.cancel()
+                        }
+                        points[id] = change.position
+                        listener.onFingerMove(id, change.position)
                     }
-                } else if (change.pressed) {
-                    points[id] = change.position
                 }
             }
-            onChanged(points.toMap())
         }
     }
 }
