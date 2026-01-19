@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.license)
 }
 
 android {
@@ -110,4 +111,12 @@ dependencies {
 
     // DataStore Preferences
     implementation(libs.datastore.preferences)
+}
+
+licenseHeader {
+    filesToScan.setFrom(fileTree("src") {
+        include("**/*.kt")
+        include("**/*.java")
+    })
+    header(rootProject.file("HEADER").readText())
 }
