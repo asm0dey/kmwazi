@@ -125,7 +125,7 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 - [x] Replace ad-hoc DropdownMenu with structured design
 - [x] Create proper sheet/dialog for mode selection
 - [x] Create proper input for group size selection
-- [ ] Improve reset button UX
+- [x] Improve reset button UX
 
 ---
 
@@ -134,18 +134,18 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 ### Recomposition Optimization
 - [x] Use `derivedStateOf` for `orderMap` computation
 - [x] Use `derivedStateOf` for `groupsMap` computation
-- [ ] Audit and minimize unnecessary recompositions
+- [x] Audit and minimize unnecessary recompositions
 - [x] Use `remember` for paint objects
 
 ### Canvas Performance
-- [ ] Reduce allocations in Canvas code
-- [ ] Reuse `AndroidPaint` objects
+- [x] Reduce allocations in Canvas code
+- [x] Reuse `AndroidPaint` objects
 - [x] Optimize drawing operations
 - [ ] Profile Canvas performance on mid-range devices
 
 ### Touch Processing
-- [ ] Cap finger colors rotation with stable assignment
-- [ ] Optimize pointer event processing
+- [x] Cap finger colors rotation with stable assignment
+- [x] Optimize pointer event processing
 - [ ] Consider snapshot flow throttling to avoid excessive recompositions
 - [ ] Verify <100ms touch response time
 
@@ -168,11 +168,11 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 - [x] Remove version conflicts and mixing
 
 ### CI Setup
-- [ ] Create GitHub Actions workflow for CI
-- [ ] Configure workflow to run unit tests
+- [x] Create GitHub Actions workflow for CI
+- [x] Configure workflow to run unit tests
 - [ ] Configure workflow to run ktlint/detekt
 - [ ] Add build status badge to README (optional)
-- [ ] Configure workflow to build APK
+- [x] Configure workflow to build APK
 - [ ] Add Android instrumented tests to CI (optional)
 
 ---

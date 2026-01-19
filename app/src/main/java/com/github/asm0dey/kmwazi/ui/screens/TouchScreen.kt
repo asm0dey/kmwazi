@@ -131,14 +131,14 @@ fun TouchScreen(onBack: () -> Unit) {
 
     // Logic to manage finger colors
     val toDraw = if (inputLocked && snapshot != null) snapshot else points
-    val activeIds = toDraw.keys.toSet()
-    LaunchedEffect(activeIds) {
+    LaunchedEffect(toDraw.keys) {
+        val activeIds = toDraw.keys
         val removed = fingerColors.keys - activeIds
         removed.forEach { fingerColors.remove(it) }
         if (points.isEmpty() && !inputLocked) nextColorIndexState.intValue = 0
     }
 
-    LaunchedEffect(points.keys.toSet()) {
+    LaunchedEffect(points.keys) {
         points.keys.forEach { id ->
             if (!fingerColors.containsKey(id)) {
                 if (mode is Mode.SplitIntoGroups) {
@@ -314,7 +314,6 @@ fun TouchScreen(onBack: () -> Unit) {
             points = toDraw,
             fingerColors = fingerColors,
             result = result,
-            inputLocked = inputLocked,
             pulseFactor = pulseFactor,
             paletteColors = palette.colors
         )
@@ -328,16 +327,33 @@ fun TouchScreen(onBack: () -> Unit) {
             palette = palette
         )
         // Back control as a cross icon in bottom-right
-        Box(
-            modifier =
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (vm.inputLocked.collectAsState().value) {
+                Button(
+                    onClick = {
+                        vm.reset()
+                        points.clear()
+                        fingerColors.clear()
+                    }
+                ) {
+                    Text("Reset")
+                }
+            }
+            Box(
+                modifier =
                 Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(24.dp)
                     .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.2f), shape = CircleShape)
                     .clickable { onBack() }
                     .padding(12.dp),
-        ) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+            ) {
+                Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+            }
         }
     }
 }

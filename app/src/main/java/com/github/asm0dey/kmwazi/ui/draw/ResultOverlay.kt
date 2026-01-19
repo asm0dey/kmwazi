@@ -47,7 +47,7 @@ fun ResultOverlay(
             is Result.Groups -> {
                 if (progress.value < 1f) {
                     val h = this.size.height * progress.value
-                    val color = Color.Gray
+                    val color = palette.colors.firstOrNull() ?: Color.Gray
                     drawRect(color = color.copy(alpha = 0.5f), size = androidx.compose.ui.geometry.Size(this.size.width, h))
                 }
             }

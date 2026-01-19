@@ -17,7 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.github.asm0dey.kmwazi.ui.navigation.Routes
+import com.github.asm0dey.kmwazi.ui.navigation.Screen
 
 @Composable
 fun HomeScreen(onNavigate: (String) -> Unit) {
@@ -32,21 +32,21 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
             modifier = Modifier.padding(bottom = 48.dp)
         )
         Button(
-            onClick = { onNavigate(Routes.Touch) },
+            onClick = { onNavigate(Screen.Touch.route) },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
             Icon(Icons.Default.PlayArrow, contentDescription = "Start game")
             Text(" Start ", style = MaterialTheme.typography.labelLarge)
         }
         Button(
-            onClick = { onNavigate(Routes.Settings) },
+            onClick = { onNavigate(Screen.Settings.route) },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
             Icon(Icons.Default.Settings, contentDescription = "Settings")
             Text(" Settings ", style = MaterialTheme.typography.labelLarge)
         }
         Button(
-            onClick = { onNavigate(Routes.Help) },
+            onClick = { onNavigate(Screen.Help.route) },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
             Icon(Icons.AutoMirrored.Filled.Help, contentDescription = "Help")

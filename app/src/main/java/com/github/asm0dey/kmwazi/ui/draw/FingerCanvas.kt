@@ -18,7 +18,6 @@ fun FingerCanvas(
     points: Map<Long, Offset>,
     fingerColors: Map<Long, Color>,
     result: Result?,
-    inputLocked: Boolean,
     pulseFactor: Float,
     paletteColors: List<Color>,
     modifier: Modifier = Modifier,
@@ -53,10 +52,10 @@ fun FingerCanvas(
             if (count < 10) {
                 val color = when {
                     currentGroupsMap != null -> paletteColors[currentGroupsMap[id]!! % paletteSize]
-                    !inputLocked -> fingerColors[id] ?: Color.Gray
-                    winnerId != null && id == winnerId -> fingerColors[id] ?: Color.Green
+                    winnerId != null && id == winnerId -> fingerColors[id] ?: paletteColors[0]
                     winnerId != null -> Color.DarkGray
-                    else -> Color.Green
+                    currentOrderMap != null -> fingerColors[id] ?: paletteColors[id.toInt() % paletteSize]
+                    else -> fingerColors[id] ?: paletteColors[id.toInt() % paletteSize]
                 }
 
                 val currentRadius = 110f * pulseFactor
