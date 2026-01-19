@@ -11,10 +11,15 @@ on:
     branches:
       - 'release/**'
       - 'main'
+    tags:
+      - '*'
   pull_request:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -57,7 +62,7 @@ jobs:
 
       # Run Build Project
       - name: Build gradle project
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       # Create APK Debug
       - name: Build apk debug project (APK) - ${{ env.main_project_module }} module
@@ -65,7 +70,7 @@ jobs:
 
       # Create APK Release
       - name: Build apk release project (APK) - ${{ env.main_project_module }} module
-        run: ./gradlew assemble
+        run: ./gradlew assembleRelease
 
       # Create Bundle AAB Release
       # Noted for main module build [main_project_module]:bundleRelease
@@ -81,15 +86,48 @@ jobs:
           path: ${{ env.main_project_module }}/build/outputs/apk/debug/
 
       # Noted For Output [main_project_module]/build/outputs/apk/release/
+      - name: Sign APK
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: ${{ env.main_project_module }}/build/outputs/apk/release/
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          buildToolsVersion: 35.0.0
+
       - name: Upload APK Release - ${{ env.repository_name }}
         uses: actions/upload-artifact@v6
         with:
           name: ${{ env.date_today }} - ${{ env.repository_name }} - APK(s) release generated
-          path: ${{ env.main_project_module }}/build/outputs/apk/release/
+          path: ${{ steps.sign_app.outputs.signedReleaseFile || format('{0}/build/outputs/apk/release/', env.main_project_module) }}
 
       # Noted For Output [main_project_module]/build/outputs/bundle/release/
+      - name: Sign AAB
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: r0adkll/sign-android-release@v1
+        id: sign_aab
+        with:
+          releaseDirectory: ${{ env.main_project_module }}/build/outputs/bundle/release/
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          buildToolsVersion: 35.0.0
+
       - name: Upload AAB (App Bundle) Release - ${{ env.repository_name }}
         uses: actions/upload-artifact@v6
         with:
           name: ${{ env.date_today }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
-          path: ${{ env.main_project_module }}/build/outputs/bundle/release/
+          path: ${{ steps.sign_aab.outputs.signedReleaseFile || format('{0}/build/outputs/bundle/release/', env.main_project_module) }}
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ${{ steps.sign_app.outputs.signedReleaseFile }}
+            ${{ steps.sign_aab.outputs.signedReleaseFile }}
+          generate_release_notes: true

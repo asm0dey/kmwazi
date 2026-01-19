@@ -114,9 +114,11 @@ dependencies {
 }
 
 licenseHeader {
-    filesToScan.setFrom(fileTree("src") {
-        include("**/*.kt")
-        include("**/*.java")
-    })
+    filesToScan.setFrom(
+        fileTree("src") {
+            include("**/*.kt")
+            include("**/*.java")
+        },
+    )
     header(rootProject.file("HEADER").readText())
 }
