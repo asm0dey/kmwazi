@@ -111,20 +111,20 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 
 ### Contrast and Visual Accessibility
 - [ ] Validate contrast for all palettes (WCAG AA compliance)
-- [ ] Add high-contrast fallback palette
+- [x] Add high-contrast fallback palette
 - [x] Ensure touch targets >= 48dp
 - [ ] Verify typography scales appropriately
 
 ### Haptic Feedback
 - [ ] Provide consistent haptic feedback hooks
 - [ ] Guard haptic calls by SDK version
-- [ ] Add haptic feedback on first touch detected
-- [ ] Add haptic feedback when result is revealed
+- [x] Add haptic feedback on first touch detected
+- [x] Add haptic feedback when result is revealed
 
 ### UI Controls Improvement
-- [ ] Replace ad-hoc DropdownMenu with structured design
-- [ ] Create proper sheet/dialog for mode selection
-- [ ] Create proper input for group size selection
+- [x] Replace ad-hoc DropdownMenu with structured design
+- [x] Create proper sheet/dialog for mode selection
+- [x] Create proper input for group size selection
 - [ ] Improve reset button UX
 
 ---
@@ -132,15 +132,15 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 ## Phase 4: Performance and Stability
 
 ### Recomposition Optimization
-- [ ] Use `derivedStateOf` for `orderMap` computation
-- [ ] Use `derivedStateOf` for `groupsMap` computation
+- [x] Use `derivedStateOf` for `orderMap` computation
+- [x] Use `derivedStateOf` for `groupsMap` computation
 - [ ] Audit and minimize unnecessary recompositions
-- [ ] Use `remember` for paint objects
+- [x] Use `remember` for paint objects
 
 ### Canvas Performance
 - [ ] Reduce allocations in Canvas code
 - [ ] Reuse `AndroidPaint` objects
-- [ ] Optimize drawing operations
+- [x] Optimize drawing operations
 - [ ] Profile Canvas performance on mid-range devices
 
 ### Touch Processing
@@ -159,13 +159,13 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 ## Phase 5: Build and CI
 
 ### Version Catalog Consolidation
-- [ ] Move all inline versions to `libs.versions.toml`
-- [ ] Add Compose BOM to version catalog
-- [ ] Remove hardcoded versions from `app/build.gradle.kts`
-- [ ] Align all Compose artifact versions with BOM
-- [ ] Set consistent lifecycle versions
-- [ ] Set consistent navigation versions
-- [ ] Remove version conflicts and mixing
+- [x] Move all inline versions to `libs.versions.toml`
+- [x] Add Compose BOM to version catalog
+- [x] Remove hardcoded versions from `app/build.gradle.kts`
+- [x] Align all Compose artifact versions with BOM
+- [x] Set consistent lifecycle versions
+- [x] Set consistent navigation versions
+- [x] Remove version conflicts and mixing
 
 ### CI Setup
 - [ ] Create GitHub Actions workflow for CI

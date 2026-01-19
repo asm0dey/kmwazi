@@ -3,6 +3,8 @@ package com.github.asm0dey.kmwazi.ui.draw
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -31,19 +33,26 @@ fun FingerCanvas(
     }
 
     val winnerId = (result as? Result.One)?.winnerId
-    val orderMap = remember(result) {
-        (result as? Result.Order)?.order?.withIndex()?.associate { it.value to (it.index + 1) }
+    val orderMap by remember(result) {
+        derivedStateOf {
+            (result as? Result.Order)?.order?.withIndex()?.associate { it.value to (it.index + 1) }
+        }
     }
-    val groupsMap = remember(result) {
-        (result as? Result.Groups)?.groups?.withIndex()?.flatMap { (gi, g) -> g.map { it to gi } }?.toMap()
+    val groupsMap by remember(result) {
+        derivedStateOf {
+            (result as? Result.Groups)?.groups?.withIndex()?.flatMap { (gi, g) -> g.map { it to gi } }?.toMap()
+        }
     }
+    val paletteSize = paletteColors.size.coerceAtLeast(1)
 
     Canvas(modifier = modifier.fillMaxSize()) {
         var count = 0
+        val currentGroupsMap = groupsMap
+        val currentOrderMap = orderMap
         points.forEach { (id, pos) ->
             if (count < 10) {
                 val color = when {
-                    groupsMap != null -> paletteColors[groupsMap[id]!! % paletteColors.size]
+                    currentGroupsMap != null -> paletteColors[currentGroupsMap[id]!! % paletteSize]
                     !inputLocked -> fingerColors[id] ?: Color.Gray
                     winnerId != null && id == winnerId -> fingerColors[id] ?: Color.Green
                     winnerId != null -> Color.DarkGray
@@ -58,7 +67,7 @@ fun FingerCanvas(
                 )
 
                 // If order mode, draw the number label inside the circle
-                val num = orderMap?.get(id)
+                val num = currentOrderMap?.get(id)
                 if (num != null) {
                     textPaint.textSize = currentRadius * 0.6f
                     val baselineY = pos.y - (textPaint.descent() + textPaint.ascent()) / 2f

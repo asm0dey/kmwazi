@@ -10,18 +10,22 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +58,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TouchScreen(onBack: () -> Unit) {
     val palette = PaletteRepository.current.collectAsState().value
@@ -157,9 +162,9 @@ fun TouchScreen(onBack: () -> Unit) {
             .pointerInput(Unit) {
                 trackMultiTouch(object : TouchEventListener {
                     override fun onFingerDown(id: Long, position: Offset) {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                         points[id] = position
                         vm.updateActive(points.toMap())
-                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                     }
 
                     override fun onFingerMove(id: Long, position: Offset) {
@@ -187,9 +192,11 @@ fun TouchScreen(onBack: () -> Unit) {
             }
     ) {
         // Mode Selector (Top Left)
-        val modeMenuExpanded = remember { mutableStateOf(false) }
+        val sheetState = rememberModalBottomSheetState()
+        val showModeSheet = remember { mutableStateOf(false) }
+
         Box(modifier = Modifier.padding(16.dp)) {
-            Button(onClick = { modeMenuExpanded.value = true }) {
+            Button(onClick = { showModeSheet.value = true }) {
                 Text(
                     when (mode) {
                         is Mode.ChooseOne -> "Mode: Choose One"
@@ -198,58 +205,68 @@ fun TouchScreen(onBack: () -> Unit) {
                     }
                 )
             }
-            DropdownMenu(
-                expanded = modeMenuExpanded.value,
-                onDismissRequest = { modeMenuExpanded.value = false },
-            ) {
-                DropdownMenuItem(
-                    text = { Text("Choose One") },
-                    onClick = {
-                        vm.setMode(Mode.ChooseOne)
-                        scope.launch { settingsRepository.saveMode(Mode.ChooseOne) }
-                        vm.reset()
-                        points.clear()
-                        fingerColors.clear()
-                        modeMenuExpanded.value = false
-                    },
-                    enabled = true,
-                )
-                DropdownMenuItem(
-                    text = { Text("Play Order") },
-                    onClick = {
-                        vm.setMode(Mode.DefineOrder)
-                        scope.launch { settingsRepository.saveMode(Mode.DefineOrder) }
-                        vm.reset()
-                        points.clear()
-                        fingerColors.clear()
-                        modeMenuExpanded.value = false
-                    },
-                    enabled = true,
-                )
-                DropdownMenuItem(
-                    text = { Text("Groups") },
-                    onClick = {
-                        val m = Mode.SplitIntoGroups(groupSizeState.intValue)
-                        vm.setMode(m)
-                        scope.launch { settingsRepository.saveMode(m) }
-                        vm.reset()
-                        points.clear()
-                        fingerColors.clear()
-                        // keep menu open to allow adjusting size if desired
-                    },
-                    enabled = true,
-                )
+        }
 
-                // Show group size controls ONLY when group mode is selected
-                if (mode is Mode.SplitIntoGroups) {
+        if (showModeSheet.value) {
+            ModalBottomSheet(
+                onDismissRequest = { showModeSheet.value = false },
+                sheetState = sheetState
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .padding(bottom = 32.dp)
+                ) {
+                    Text(
+                        "Selection Mode",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(bottom = 16.dp)
+                    )
+
                     DropdownMenuItem(
-                        text = {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Button(onClick = {
-                                    if (groupSizeState.intValue > 1) {
+                        text = { Text("Choose One") },
+                        onClick = {
+                            vm.setMode(Mode.ChooseOne)
+                            scope.launch { settingsRepository.saveMode(Mode.ChooseOne) }
+                            vm.reset()
+                            points.clear()
+                            fingerColors.clear()
+                            showModeSheet.value = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Play Order") },
+                        onClick = {
+                            vm.setMode(Mode.DefineOrder)
+                            scope.launch { settingsRepository.saveMode(Mode.DefineOrder) }
+                            vm.reset()
+                            points.clear()
+                            fingerColors.clear()
+                            showModeSheet.value = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Groups") },
+                        onClick = {
+                            val m = Mode.SplitIntoGroups(groupSizeState.intValue)
+                            vm.setMode(m)
+                            scope.launch { settingsRepository.saveMode(m) }
+                            vm.reset()
+                            points.clear()
+                            fingerColors.clear()
+                        }
+                    )
+
+                    // Show group size controls ONLY when group mode is selected
+                    if (mode is Mode.SplitIntoGroups) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Button(
+                                onClick = {
+                                    if (groupSizeState.intValue > 2) {
                                         groupSizeState.intValue -= 1
                                         val m = Mode.SplitIntoGroups(groupSizeState.intValue)
                                         vm.setMode(m)
@@ -258,10 +275,20 @@ fun TouchScreen(onBack: () -> Unit) {
                                         points.clear()
                                         fingerColors.clear()
                                     }
-                                }, enabled = true) { Text("-") }
-                                Text("Group size: ${groupSizeState.intValue}")
-                                Button(onClick = {
-                                    if (groupSizeState.intValue < 9) {
+                                },
+                                modifier = Modifier.size(48.dp),
+                                shape = CircleShape,
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                            ) {
+                                Text("-", style = MaterialTheme.typography.headlineSmall)
+                            }
+                            Text(
+                                "Group size: ${groupSizeState.intValue}",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Button(
+                                onClick = {
+                                    if (groupSizeState.intValue < 10) {
                                         groupSizeState.intValue += 1
                                         val m = Mode.SplitIntoGroups(groupSizeState.intValue)
                                         vm.setMode(m)
@@ -270,12 +297,15 @@ fun TouchScreen(onBack: () -> Unit) {
                                         points.clear()
                                         fingerColors.clear()
                                     }
-                                }, enabled = true) { Text("+") }
+                                },
+                                modifier = Modifier.size(48.dp),
+                                shape = CircleShape,
+                                contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                            ) {
+                                Text("+", style = MaterialTheme.typography.headlineSmall)
                             }
-                        },
-                        onClick = { /* no-op */ },
-                        enabled = true,
-                    )
+                        }
+                    }
                 }
             }
         }
