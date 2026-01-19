@@ -1,5 +1,6 @@
 package com.github.asm0dey.kmwazi.ui.screens
 
+import android.app.Activity
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -40,11 +41,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.asm0dey.kmwazi.di.ServiceLocator.settingsRepository
 import com.github.asm0dey.kmwazi.domain.Mode
@@ -80,7 +86,17 @@ fun TouchScreen(onBack: () -> Unit) {
     val groupSizeState = remember { mutableIntStateOf(2) }
 
     // Load saved mode and decision timeout on first composition
+    val view = LocalView.current
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
+        val window = (context as? Activity)?.window
+        if (window != null) {
+            val controller = WindowCompat.getInsetsController(window, view)
+            controller.hide(WindowInsetsCompat.Type.statusBars())
+            controller.systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+
         val savedMode = settingsRepository.modeFlow().first()
         vm.setMode(savedMode)
         if (savedMode is Mode.SplitIntoGroups) {
