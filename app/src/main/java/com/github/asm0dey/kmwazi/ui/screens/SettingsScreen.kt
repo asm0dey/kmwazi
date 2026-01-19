@@ -138,11 +138,11 @@ fun SettingsScreen(onBack: () -> Unit) {
                 Modifier
                     .align(Alignment.BottomEnd)
                     .padding(24.dp)
-                    .background(Color(0x33000000), shape = CircleShape)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.2f), shape = CircleShape)
                     .clickable { onBack() }
                     .padding(12.dp),
         ) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

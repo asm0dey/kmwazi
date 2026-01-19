@@ -6,10 +6,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -22,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,22 +35,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.nativeCanvas
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.asm0dey.kmwazi.di.ServiceLocator.settingsRepository
 import com.github.asm0dey.kmwazi.domain.Mode
-import com.github.asm0dey.kmwazi.domain.Result
 import com.github.asm0dey.kmwazi.ui.PaletteRepository
+import com.github.asm0dey.kmwazi.ui.draw.FingerCanvas
+import com.github.asm0dey.kmwazi.ui.draw.ResultOverlay
 import com.github.asm0dey.kmwazi.ui.gestures.trackMultiTouch
 import com.github.asm0dey.kmwazi.viewmodel.TouchViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlin.math.hypot
-import android.graphics.Paint as AndroidPaint
 
 @Composable
 fun TouchScreen(onBack: () -> Unit) {
@@ -90,10 +86,12 @@ fun TouchScreen(onBack: () -> Unit) {
 
     LaunchedEffect(result) {
         if (result != null) {
-            haptic.performHapticFeedback(androidx.compose.ui.input.pointer.PointerType.Touch.let { androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress })
+            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
             showOverlay.value = true
             resultProgress.snapTo(0f)
             resultProgress.animateTo(1f, tween(800))
+            delay(1000)
+            showOverlay.value = false
         } else {
             showOverlay.value = false
             resultProgress.snapTo(0f)
@@ -112,37 +110,40 @@ fun TouchScreen(onBack: () -> Unit) {
         label = "pulseFactor"
     )
 
+    // Logic to manage finger colors
+    val toDraw = if (inputLocked && snapshot != null) snapshot else points
+    val activeIds = toDraw.keys.toSet()
+    LaunchedEffect(activeIds) {
+        val removed = fingerColors.keys - activeIds
+        removed.forEach { fingerColors.remove(it) }
+        if (points.isEmpty() && !inputLocked) nextColorIndexState.intValue = 0
+    }
+
+    LaunchedEffect(points.keys.toSet()) {
+        points.keys.forEach { id ->
+            if (!fingerColors.containsKey(id)) {
+                if (mode is Mode.SplitIntoGroups) {
+                    fingerColors[id] = Color.Gray
+                } else {
+                    val idx = nextColorIndexState.intValue % palette.colors.size.coerceAtLeast(1)
+                    fingerColors[id] = palette.colors.getOrElse(idx) { Color(0xFF00E5FF) }
+                    nextColorIndexState.intValue += 1
+                }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(inputLocked) {
-                if (!inputLocked) {
-                    trackMultiTouch(
-                        points = points,
-                        onChanged = { vm.updateActive(it) },
-                        onFingerAdded = {
-                            haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                        }
-                    )
-                } else {
-                    // When locked, still listen for a long-press anywhere to reset
-                    awaitEachGesture {
-                        val down = awaitPointerEvent().changes.firstOrNull()
-                        if (down != null) {
-                            val start = System.currentTimeMillis()
-                            while (true) {
-                                val event = awaitPointerEvent()
-                                if (event.changes.any { it.changedToUp() }) break
-                                if (System.currentTimeMillis() - start > TouchViewModel.LONG_PRESS_RESET_MS) {
-                                    vm.reset()
-                                    points.clear()
-                                    haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
-                                    break
-                                }
-                            }
-                        }
+            .pointerInput(Unit) {
+                trackMultiTouch(
+                    points = points,
+                    onChanged = { vm.updateActive(it) },
+                    onFingerAdded = {
+                        haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
                     }
-                }
+                )
             }
     ) {
         // Mode Selector (Top Left)
@@ -168,6 +169,7 @@ fun TouchScreen(onBack: () -> Unit) {
                         scope.launch { settingsRepository.saveMode(Mode.ChooseOne) }
                         vm.reset()
                         points.clear()
+                        fingerColors.clear()
                         modeMenuExpanded.value = false
                     },
                     enabled = true,
@@ -179,6 +181,7 @@ fun TouchScreen(onBack: () -> Unit) {
                         scope.launch { settingsRepository.saveMode(Mode.DefineOrder) }
                         vm.reset()
                         points.clear()
+                        fingerColors.clear()
                         modeMenuExpanded.value = false
                     },
                     enabled = true,
@@ -191,6 +194,7 @@ fun TouchScreen(onBack: () -> Unit) {
                         scope.launch { settingsRepository.saveMode(m) }
                         vm.reset()
                         points.clear()
+                        fingerColors.clear()
                         // keep menu open to allow adjusting size if desired
                     },
                     enabled = true,
@@ -212,6 +216,7 @@ fun TouchScreen(onBack: () -> Unit) {
                                         scope.launch { settingsRepository.saveMode(m) }
                                         vm.reset()
                                         points.clear()
+                                        fingerColors.clear()
                                     }
                                 }, enabled = true) { Text("-") }
                                 Text("Group size: ${groupSizeState.intValue}")
@@ -223,6 +228,7 @@ fun TouchScreen(onBack: () -> Unit) {
                                         scope.launch { settingsRepository.saveMode(m) }
                                         vm.reset()
                                         points.clear()
+                                        fingerColors.clear()
                                     }
                                 }, enabled = true) { Text("+") }
                             }
@@ -234,121 +240,34 @@ fun TouchScreen(onBack: () -> Unit) {
             }
         }
 
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            val toDraw = if (inputLocked) (snapshot ?: emptyMap()) else points
-            // Cleanup colors for removed fingers
-            val activeIds = toDraw.keys.toSet()
-            val removed = fingerColors.keys - activeIds
-            removed.forEach { fingerColors.remove(it) }
-            // Reset color rotation if no fingers
-            if (activeIds.isEmpty()) nextColorIndexState.intValue = 0
-            var count = 0
+        FingerCanvas(
+            points = toDraw,
+            fingerColors = fingerColors,
+            result = result,
+            inputLocked = inputLocked,
+            pulseFactor = pulseFactor,
+            paletteColors = palette.colors
+        )
 
-            // Determine per-mode rendering
-            val winnerId = (result as? Result.One)?.winnerId
-            val orderMap: Map<Long, Int>? = (result as? Result.Order)?.order?.withIndex()?.associate { it.value to (it.index + 1) }
-            val groupsMap: Map<Long, Int>? =
-                (result as? Result.Groups)?.groups?.withIndex()?.flatMap { (gi, g) -> g.map { it to gi } }
-                    ?.toMap()
-            val groupColors = palette.colors
-
-            toDraw.forEach { (id, pos) ->
-                if (count < 10) {
-                    val color =
-                        when {
-                            !inputLocked -> {
-                                // Assign per-finger color from current palette, rotating when palette is exhausted
-                                val existing = fingerColors[id]
-                                if (existing != null) {
-                                    existing
-                                } else {
-                                    val idx = nextColorIndexState.intValue % palette.colors.size.coerceAtLeast(1)
-                                    val c = palette.colors.getOrElse(idx) { Color(0xFF00E5FF) }
-                                    fingerColors[id] = c
-                                    nextColorIndexState.intValue += 1
-                                    c
-                                }
-                            }
-                            groupsMap != null -> groupColors[groupsMap[id]!! % groupColors.size]
-                            winnerId != null && id == winnerId -> fingerColors[id] ?: Color(0xFF4CAF50)
-                            winnerId != null -> Color(0xFF444444)
-                            else -> Color(0xFF4CAF50)
-                        }
-                    val currentRadius = 110f * pulseFactor
-                    drawCircle(
-                        color = color,
-                        radius = currentRadius,
-                        center = pos,
-                    )
-                    // If order mode, draw the number label inside the circle (centered)
-                    val num = orderMap?.get(id)
-                    if (num != null) {
-                        val paint =
-                            AndroidPaint().apply {
-                                isAntiAlias = true
-                                this.color = Color.White.toArgb()
-                                textSize = currentRadius * 0.6f
-                                textAlign = AndroidPaint.Align.CENTER
-                            }
-                        val baselineY = pos.y - (paint.descent() + paint.ascent()) / 2f
-                        drawContext.canvas.nativeCanvas.drawText(
-                            num.toString(),
-                            pos.x,
-                            baselineY,
-                            paint,
-                        )
-                    }
-                    count++
-                }
-            }
-        }
-
-        // Results overlay animations
-        if (showOverlay.value && result != null) {
-            val winnerIdOverlay = (result as? Result.One)?.winnerId
-            val winnerPos = winnerIdOverlay?.let { id -> snapshot?.get(id) }
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                when (result) {
-                    is Result.One -> {
-                        val center = winnerPos ?: Offset(this.size.width / 2f, this.size.height / 2f)
-                        val maxRadius = hypot(this.size.width.toDouble(), this.size.height.toDouble()).toFloat()
-                        val r = maxRadius * resultProgress.value
-                        val color = fingerColors[winnerIdOverlay] ?: palette.colors.firstOrNull() ?: Color(0xFF4CAF50)
-                        drawCircle(color = color.copy(alpha = 0.5f), radius = r, center = center)
-                    }
-                    is Result.Order -> {
-                        val firstId = result.order.firstOrNull()
-                        val center =
-                            firstId?.let { fid ->
-                                snapshot?.get(fid)
-                            } ?: Offset(this.size.width / 2f, this.size.height / 2f)
-                        val maxRadius = hypot(this.size.width.toDouble(), this.size.height.toDouble()).toFloat()
-                        val r = maxRadius * resultProgress.value
-                        val color =
-                            firstId?.let { fid ->
-                                fingerColors[fid]
-                            } ?: palette.colors.firstOrNull() ?: Color(0xFF2196F3)
-                        drawCircle(color = color.copy(alpha = 0.5f), radius = r, center = center)
-                    }
-                    is Result.Groups -> {
-                        val h = this.size.height * resultProgress.value
-                        val color = palette.colors.firstOrNull() ?: Color(0xFF2196F3)
-                        drawRect(color = color.copy(alpha = 0.5f), size = androidx.compose.ui.geometry.Size(this.size.width, h))
-                    }
-                }
-            }
-        }
+        ResultOverlay(
+            show = showOverlay.value,
+            result = result,
+            progress = resultProgress,
+            snapshot = snapshot,
+            fingerColors = fingerColors,
+            palette = palette
+        )
         // Back control as a cross icon in bottom-right
         Box(
             modifier =
                 Modifier
                     .align(Alignment.BottomEnd)
                     .padding(24.dp)
-                    .background(Color(0x33000000), shape = CircleShape)
+                    .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.2f), shape = CircleShape)
                     .clickable { onBack() }
                     .padding(12.dp),
         ) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
+            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

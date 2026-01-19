@@ -29,8 +29,7 @@ class DataStoreSettingsRepository(private val dataStore: DataStore<Preferences>)
 
     override fun paletteFlow(): Flow<Palette> =
         dataStore.data.map { prefs ->
-            val name = prefs[KEY_PALETTE]
-            when (name) {
+            when (prefs[KEY_PALETTE]) {
                 Palettes.Pastel.name -> Palettes.Pastel
                 Palettes.Colorblind.name -> Palettes.Colorblind
                 Palettes.Vibrant.name -> Palettes.Vibrant

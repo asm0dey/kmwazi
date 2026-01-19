@@ -7,7 +7,7 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 
 - [x] Phase 0: Safety net and hygiene
 - [x] Phase 1: Architecture and testability
-- [ ] Phase 2: UI separation and theming
+- [x] Phase 2: UI separation and theming
 - [ ] Phase 3: Accessibility and UX polish
 - [ ] Phase 4: Performance and stability
 - [ ] Phase 5: Build and CI
@@ -74,7 +74,7 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 - [x] Extract `TouchScreen.kt` from `Screens.kt`
 - [x] Extract `SettingsScreen.kt` from `Screens.kt`
 - [x] Extract `HelpScreen.kt` from `Screens.kt`
-- [ ] Create `ui/draw/FingerCanvas.kt` for drawing logic
+- [x] Create `ui/draw/FingerCanvas.kt` for drawing logic
 - [x] Create `ui/gestures/MultiTouchTracker.kt` for pointer tracking
 - [x] Delete original oversized `Screens.kt` file
 
@@ -90,14 +90,14 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 - [x] Map palette colors to primary/secondary/tertiary
 - [x] Set surface/background colors from palette
 - [x] Remove hardcoded `Color.Black` backgrounds
-- [ ] Replace all hardcoded colors with `MaterialTheme.colorScheme` references
+- [x] Replace all hardcoded colors with `MaterialTheme.colorScheme` references
 - [ ] Test theme with all three palettes
 
 ### Drawing Optimization
-- [ ] Extract number drawing into helper function
-- [ ] Remember paint instances to avoid recreation
-- [ ] Move paint setup out of draw loop
-- [ ] Create `ResultOverlay` composable for animations
+- [x] Extract number drawing into helper function
+- [x] Remember paint instances to avoid recreation
+- [x] Move paint setup out of draw loop
+- [x] Create `ResultOverlay` composable for animations
 
 ---
 

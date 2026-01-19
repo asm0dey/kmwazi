@@ -21,7 +21,6 @@ class TouchViewModel(
         tickMs = TICK_MS,
     )
     private val _activePoints = MutableStateFlow<Map<Long, Offset>>(emptyMap())
-    val activePoints: StateFlow<Map<Long, Offset>> get() = _activePoints
 
     val remainingMs: StateFlow<Long?> get() = countdownController.remainingMs
 
@@ -38,7 +37,6 @@ class TouchViewModel(
     val result: StateFlow<Result?> get() = _result
 
     private val _decisionTimeoutMs = MutableStateFlow(3000L)
-    val decisionTimeoutMs: StateFlow<Long> get() = _decisionTimeoutMs
 
     fun setMode(newMode: Mode) {
         _mode.value = newMode
@@ -50,12 +48,25 @@ class TouchViewModel(
     }
 
     fun updateActive(points: Map<Long, Offset>) {
-        // If input is locked, ignore live updates
-        if (_inputLocked.value) return
-
         val prevKeys = _activePoints.value.keys
         val newKeys = points.keys
         _activePoints.value = points
+
+        if (_inputLocked.value) {
+            // If input is locked (result is shown), wait for ALL fingers to be removed,
+            // then if new fingers are added, reset and start a new game.
+            if (prevKeys.isNotEmpty() && newKeys.isEmpty()) {
+                // All fingers removed, but we keep the result.
+                return
+            }
+            if (prevKeys.isEmpty() && newKeys.isNotEmpty()) {
+                // New fingers placed after all were removed - reset and start new game
+                reset()
+                _activePoints.value = points // Restore points after reset cleared them
+                restartTimer()
+            }
+            return
+        }
 
         if (newKeys != prevKeys) {
             // Touch set changed
@@ -102,6 +113,5 @@ class TouchViewModel(
         private const val TICK_MS = 100L
 
         // Long-press duration to reset when result is shown
-        const val LONG_PRESS_RESET_MS = 500L
     }
 }
