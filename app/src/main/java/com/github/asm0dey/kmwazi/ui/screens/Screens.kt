@@ -49,7 +49,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.asm0dey.kmwazi.data.SettingsRepository
+import com.github.asm0dey.kmwazi.di.ServiceLocator
 import com.github.asm0dey.kmwazi.domain.Mode
 import com.github.asm0dey.kmwazi.domain.Result
 import com.github.asm0dey.kmwazi.ui.PaletteRepository
@@ -66,12 +66,21 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text("Kmwazi")
-        Button(onClick = { onNavigate(Routes.Touch) }) { Icon(Icons.Default.PlayArrow, contentDescription = null); Text(" Start ") }
-        Button(onClick = { onNavigate(Routes.Settings) }) { Icon(Icons.Default.Settings, contentDescription = null); Text(" Settings ") }
-        Button(onClick = { onNavigate(Routes.Help) }) { Icon(Icons.AutoMirrored.Filled.Help, contentDescription = null); Text(" Help ") }
+        Button(onClick = { onNavigate(Routes.Touch) }) {
+            Icon(Icons.Default.PlayArrow, contentDescription = null)
+            Text(" Start ")
+        }
+        Button(onClick = { onNavigate(Routes.Settings) }) {
+            Icon(Icons.Default.Settings, contentDescription = null)
+            Text(" Settings ")
+        }
+        Button(onClick = { onNavigate(Routes.Help) }) {
+            Icon(Icons.AutoMirrored.Filled.Help, contentDescription = null)
+            Text(" Help ")
+        }
     }
 }
 
@@ -99,13 +108,13 @@ fun TouchScreen(onBack: () -> Unit) {
 
     // Load saved mode and decision timeout on first composition
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        val savedMode = SettingsRepository.modeFlow(context).first()
+        val savedMode = ServiceLocator.settingsRepository.modeFlow().first()
         if (savedMode is Mode.SplitIntoGroups) {
             groupSizeState.intValue = savedMode.groupSize
         }
         vm.setMode(savedMode)
 
-        val timeoutSec = SettingsRepository.decisionTimeoutSecondsFlow(context).first()
+        val timeoutSec = ServiceLocator.settingsRepository.decisionTimeoutSecondsFlow().first()
         vm.setDecisionTimeoutSeconds(timeoutSec)
     }
 
@@ -126,45 +135,58 @@ fun TouchScreen(onBack: () -> Unit) {
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .then(
-                if (!inputLocked) Modifier.pointerInput(Unit) {
-                    trackMultiTouch(
-                        points = points,
-                        onChanged = { updated -> vm.updateActive(updated) },
-                        onFingerAdded = { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove) },
-                        onFingerRemoved = { haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress) }
-                    )
-                } else Modifier.pointerInput(result) {
-                    // When result is known, allow long-press to reset, but only if a NEW finger is placed after the result is shown
-                    if (result != null) {
-                        awaitEachGesture {
-                            // Wait for a new down event (ignore already pressed pointers)
-                            var startTime: Long? = null
-                            while (true) {
-                                val e = awaitPointerEvent(PointerEventPass.Main)
-                                val newDown = e.changes.any { it.changedToDown() }
-                                if (startTime == null && newDown) {
-                                    startTime = System.currentTimeMillis()
-                                }
-                                // If we haven't started (no new down yet), continue waiting
-                                if (startTime == null) continue
-                                // After started, if all pointers are up -> cancel
-                                val anyPressed = e.changes.any { it.pressed }
-                                if (!anyPressed) break
-                                val elapsed = System.currentTimeMillis() - startTime
-                                if (elapsed >= TouchViewModel.LONG_PRESS_RESET_MS) {
-                                    vm.reset()
-                                    points.clear()
-                                    break
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Color.Black)
+                .then(
+                    if (!inputLocked) {
+                        Modifier.pointerInput(Unit) {
+                            trackMultiTouch(
+                                points = points,
+                                onChanged = { updated -> vm.updateActive(updated) },
+                                onFingerAdded = {
+                                    haptic.performHapticFeedback(
+                                        androidx.compose.ui.hapticfeedback.HapticFeedbackType.TextHandleMove,
+                                    )
+                                },
+                                onFingerRemoved = {
+                                    haptic.performHapticFeedback(
+                                        androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress,
+                                    )
+                                },
+                            )
+                        }
+                    } else {
+                        Modifier.pointerInput(result) {
+                            // When result is known, allow long-press to reset, but only if a NEW finger is placed after the result is shown
+                            if (result != null) {
+                                awaitEachGesture {
+                                    // Wait for a new down event (ignore already pressed pointers)
+                                    var startTime: Long? = null
+                                    while (true) {
+                                        val e = awaitPointerEvent(PointerEventPass.Main)
+                                        val newDown = e.changes.any { it.changedToDown() }
+                                        if (startTime == null && newDown) {
+                                            startTime = System.currentTimeMillis()
+                                        }
+                                        // If we haven't started (no new down yet), continue waiting
+                                        if (startTime == null) continue
+                                        // After started, if all pointers are up -> cancel
+                                        val anyPressed = e.changes.any { it.pressed }
+                                        if (!anyPressed) break
+                                        val elapsed = System.currentTimeMillis() - startTime
+                                        if (elapsed >= TouchViewModel.LONG_PRESS_RESET_MS) {
+                                            vm.reset()
+                                            points.clear()
+                                            break
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            )
+                    },
+                ),
     ) {
         // Pulsation: active only while countdown is running
         val isCountingDown = (remaining != null && remaining > 0)
@@ -172,11 +194,12 @@ fun TouchScreen(onBack: () -> Unit) {
         val pulse by infinite.animateFloat(
             initialValue = 0.9f,
             targetValue = 1.1f,
-            animationSpec = infiniteRepeatable(
-                animation = tween(durationMillis = 600),
-                repeatMode = RepeatMode.Reverse
-            ),
-            label = "pulseFactor"
+            animationSpec =
+                infiniteRepeatable(
+                    animation = tween(durationMillis = 600),
+                    repeatMode = RepeatMode.Reverse,
+                ),
+            label = "pulseFactor",
         )
         val pulseFactor = if (isCountingDown) pulse else 1f
         // Mode controls are hidden behind a settings (gear) button (moved to bottom-left)
@@ -185,73 +208,96 @@ fun TouchScreen(onBack: () -> Unit) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .background(Color(0x33000000), shape = CircleShape)
-                    .padding(8.dp)
-                    .clickable { modeMenuExpanded.value = true }
+                modifier =
+                    Modifier
+                        .background(Color(0x33000000), shape = CircleShape)
+                        .padding(8.dp)
+                        .clickable { modeMenuExpanded.value = true },
             ) {
                 Icon(Icons.Default.Settings, contentDescription = "Modes / Settings", tint = Color.White)
                 Text(
-                    text = when (mode) {
-                        is Mode.ChooseOne -> "Choose One"
-                        is Mode.DefineOrder -> "Play Order"
-                        is Mode.SplitIntoGroups -> "Groups(${mode.groupSize})"
-                    },
-                    color = Color.White
+                    text =
+                        when (mode) {
+                            is Mode.ChooseOne -> "Choose One"
+                            is Mode.DefineOrder -> "Play Order"
+                            is Mode.SplitIntoGroups -> "Groups(${mode.groupSize})"
+                        },
+                    color = Color.White,
                 )
             }
 
             androidx.compose.material3.DropdownMenu(
                 expanded = modeMenuExpanded.value,
-                onDismissRequest = { modeMenuExpanded.value = false }
+                onDismissRequest = { modeMenuExpanded.value = false },
             ) {
                 androidx.compose.material3.DropdownMenuItem(
                     text = { Text("Choose One") },
                     onClick = {
                         vm.setMode(Mode.ChooseOne)
-                        scope.launch { SettingsRepository.saveMode(context, Mode.ChooseOne) }
+                        scope.launch { ServiceLocator.settingsRepository.saveMode(Mode.ChooseOne) }
                         vm.reset()
                         points.clear()
                         modeMenuExpanded.value = false
                     },
-                    enabled = true
+                    enabled = true,
                 )
                 androidx.compose.material3.DropdownMenuItem(
                     text = { Text("Play Order") },
                     onClick = {
                         vm.setMode(Mode.DefineOrder)
-                        scope.launch { SettingsRepository.saveMode(context, Mode.DefineOrder) }
+                        scope.launch { ServiceLocator.settingsRepository.saveMode(Mode.DefineOrder) }
                         vm.reset()
                         points.clear()
                         modeMenuExpanded.value = false
                     },
-                    enabled = true
+                    enabled = true,
                 )
                 androidx.compose.material3.DropdownMenuItem(
                     text = { Text("Groups") },
                     onClick = {
                         val m = Mode.SplitIntoGroups(groupSizeState.intValue)
                         vm.setMode(m)
-                        scope.launch { SettingsRepository.saveMode(context, m) }
+                        scope.launch { ServiceLocator.settingsRepository.saveMode(m) }
                         vm.reset()
                         points.clear()
                         // keep menu open to allow adjusting size if desired
                     },
-                    enabled = true
+                    enabled = true,
                 )
 
                 // Show group size controls ONLY when group mode is selected
                 if (mode is Mode.SplitIntoGroups) {
                     androidx.compose.material3.DropdownMenuItem(
                         text = {
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Button(onClick = { if (groupSizeState.intValue > 1) { groupSizeState.intValue -= 1; val m = Mode.SplitIntoGroups(groupSizeState.intValue); vm.setMode(m); scope.launch { SettingsRepository.saveMode(context, m) }; vm.reset(); points.clear() } }, enabled = true) { Text("-") }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Button(onClick = {
+                                    if (groupSizeState.intValue > 1) {
+                                        groupSizeState.intValue -= 1
+                                        val m = Mode.SplitIntoGroups(groupSizeState.intValue)
+                                        vm.setMode(m)
+                                        scope.launch { ServiceLocator.settingsRepository.saveMode(m) }
+                                        vm.reset()
+                                        points.clear()
+                                    }
+                                }, enabled = true) { Text("-") }
                                 Text("Group size: ${groupSizeState.intValue}")
-                                Button(onClick = { if (groupSizeState.intValue < 9) { groupSizeState.intValue += 1; val m = Mode.SplitIntoGroups(groupSizeState.intValue); vm.setMode(m); scope.launch { SettingsRepository.saveMode(context, m) }; vm.reset(); points.clear() } }, enabled = true) { Text("+") }
+                                Button(onClick = {
+                                    if (groupSizeState.intValue < 9) {
+                                        groupSizeState.intValue += 1
+                                        val m = Mode.SplitIntoGroups(groupSizeState.intValue)
+                                        vm.setMode(m)
+                                        scope.launch { ServiceLocator.settingsRepository.saveMode(m) }
+                                        vm.reset()
+                                        points.clear()
+                                    }
+                                }, enabled = true) { Text("+") }
                             }
                         },
                         onClick = { /* no-op */ },
-                        enabled = true
+                        enabled = true,
                     )
                 }
             }
@@ -277,44 +323,48 @@ fun TouchScreen(onBack: () -> Unit) {
 
             toDraw.forEach { (id, pos) ->
                 if (count < 10) {
-                    val color = when {
-                        !inputLocked -> {
-                            // Assign per-finger color from current palette, rotating when palette is exhausted
-                            val existing = fingerColors[id]
-                            if (existing != null) existing else {
-                                val idx = nextColorIndexState.intValue % palette.colors.size.coerceAtLeast(1)
-                                val c = palette.colors.getOrElse(idx) { Color(0xFF00E5FF) }
-                                fingerColors[id] = c
-                                nextColorIndexState.intValue = nextColorIndexState.intValue + 1
-                                c
+                    val color =
+                        when {
+                            !inputLocked -> {
+                                // Assign per-finger color from current palette, rotating when palette is exhausted
+                                val existing = fingerColors[id]
+                                if (existing != null) {
+                                    existing
+                                } else {
+                                    val idx = nextColorIndexState.intValue % palette.colors.size.coerceAtLeast(1)
+                                    val c = palette.colors.getOrElse(idx) { Color(0xFF00E5FF) }
+                                    fingerColors[id] = c
+                                    nextColorIndexState.intValue = nextColorIndexState.intValue + 1
+                                    c
+                                }
                             }
+                            groupsMap != null -> groupColors[groupsMap[id]!! % groupColors.size]
+                            winnerId != null && id == winnerId -> Color(0xFF4CAF50)
+                            winnerId != null -> Color(0xFF444444)
+                            else -> Color(0xFF4CAF50)
                         }
-                        groupsMap != null -> groupColors[groupsMap[id]!! % groupColors.size]
-                        winnerId != null && id == winnerId -> Color(0xFF4CAF50)
-                        winnerId != null -> Color(0xFF444444)
-                        else -> Color(0xFF4CAF50)
-                    }
                     val currentRadius = 110f * pulseFactor
                     drawCircle(
                         color = color,
                         radius = currentRadius,
-                        center = pos
+                        center = pos,
                     )
                     // If order mode, draw the number label inside the circle (centered)
                     val num = orderMap?.get(id)
                     if (num != null) {
-                        val paint = AndroidPaint().apply {
-                            isAntiAlias = true
-                            this.color = Color.White.toArgb()
-                            textSize = currentRadius * 0.6f
-                            textAlign = AndroidPaint.Align.CENTER
-                        }
+                        val paint =
+                            AndroidPaint().apply {
+                                isAntiAlias = true
+                                this.color = Color.White.toArgb()
+                                textSize = currentRadius * 0.6f
+                                textAlign = AndroidPaint.Align.CENTER
+                            }
                         val baselineY = pos.y - (paint.descent() + paint.ascent()) / 2f
                         drawContext.canvas.nativeCanvas.drawText(
                             num.toString(),
                             pos.x,
                             baselineY,
-                            paint
+                            paint,
                         )
                     }
                     count++
@@ -337,10 +387,18 @@ fun TouchScreen(onBack: () -> Unit) {
                     }
                     is Result.Order -> {
                         val firstId = result.order.firstOrNull()
-                        val center = firstId?.let { fid -> snapshot?.get(fid) } ?: Offset(this.size.width / 2f, this.size.height / 2f)
+                        val center =
+                            firstId?.let {
+                                    fid ->
+                                snapshot?.get(fid)
+                            } ?: Offset(this.size.width / 2f, this.size.height / 2f)
                         val maxRadius = hypot(this.size.width.toDouble(), this.size.height.toDouble()).toFloat()
                         val r = maxRadius * resultProgress.value
-                        val color = firstId?.let { fid -> fingerColors[fid] } ?: palette.colors.firstOrNull() ?: Color(0xFF2196F3)
+                        val color =
+                            firstId?.let {
+                                    fid ->
+                                fingerColors[fid]
+                            } ?: palette.colors.firstOrNull() ?: Color(0xFF2196F3)
                         drawCircle(color = color, radius = r, center = center)
                     }
                     is Result.Groups -> {
@@ -353,12 +411,13 @@ fun TouchScreen(onBack: () -> Unit) {
         }
         // Back control as a cross icon in bottom-right
         Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp)
-                .background(Color(0x33000000), shape = CircleShape)
-                .clickable { onBack() }
-                .padding(12.dp)
+            modifier =
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp)
+                    .background(Color(0x33000000), shape = CircleShape)
+                    .clickable { onBack() }
+                    .padding(12.dp),
         ) {
             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
         }
@@ -369,7 +428,7 @@ private suspend fun PointerInputScope.trackMultiTouch(
     points: MutableMap<Long, Offset>,
     onChanged: (Map<Long, Offset>) -> Unit,
     onFingerAdded: (() -> Unit)? = null,
-    onFingerRemoved: (() -> Unit)? = null
+    onFingerRemoved: (() -> Unit)? = null,
 ) {
     awaitEachGesture {
         while (true) {
@@ -401,15 +460,16 @@ fun SettingsScreen(onBack: () -> Unit) {
     val expandedState = remember { androidx.compose.runtime.mutableStateOf(false) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val timeoutSecState = SettingsRepository
-        .decisionTimeoutSecondsFlow(context)
-        .collectAsState(initial = 3)
+    val timeoutSecState =
+        ServiceLocator.settingsRepository
+            .decisionTimeoutSecondsFlow()
+            .collectAsState(initial = 3)
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text("Select color palette", fontWeight = FontWeight.Bold)
 
@@ -422,10 +482,11 @@ fun SettingsScreen(onBack: () -> Unit) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier
-                        .background(androidx.compose.material3.MaterialTheme.colorScheme.surface)
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                        .clickable { expandedState.value = true }
+                    modifier =
+                        Modifier
+                            .background(androidx.compose.material3.MaterialTheme.colorScheme.surface)
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .clickable { expandedState.value = true },
                 ) {
                     // Show compact stripes next to the name to hint it is a selector
                     ColorStripes(colors = current.colors, modifier = Modifier.size(width = 60.dp, height = 24.dp))
@@ -433,21 +494,30 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
                 androidx.compose.material3.DropdownMenu(
                     expanded = expandedState.value,
-                    onDismissRequest = { expandedState.value = false }
+                    onDismissRequest = { expandedState.value = false },
                 ) {
                     Palettes.All.forEach { palette ->
                         androidx.compose.material3.DropdownMenuItem(
                             text = {
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    ColorStripes(colors = palette.colors, modifier = Modifier.size(width = 60.dp, height = 24.dp))
-                                    Text(palette.name, color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface)
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                ) {
+                                    ColorStripes(
+                                        colors = palette.colors,
+                                        modifier = Modifier.size(width = 60.dp, height = 24.dp),
+                                    )
+                                    Text(
+                                        palette.name,
+                                        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                                    )
                                 }
                             },
                             onClick = {
                                 PaletteRepository.setPalette(palette)
-                                scope.launch { SettingsRepository.savePalette(context, palette) }
+                                scope.launch { ServiceLocator.settingsRepository.savePalette(palette) }
                                 expandedState.value = false
-                            }
+                            },
                         )
                     }
                 }
@@ -456,28 +526,31 @@ fun SettingsScreen(onBack: () -> Unit) {
             // Decision timeout setting (1..10 seconds)
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Text("Decision timeout:", color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface)
                 Button(onClick = {
                     val newVal = (timeoutSecState.value - 1).coerceIn(1, 10)
-                    scope.launch { SettingsRepository.saveDecisionTimeoutSeconds(context, newVal) }
+                    scope.launch { ServiceLocator.settingsRepository.saveDecisionTimeoutSeconds(newVal) }
                 }) { Text("-") }
-                Text("${timeoutSecState.value}s", color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface)
+                Text(
+                    "${timeoutSecState.value}s",
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                )
                 Button(onClick = {
                     val newVal = (timeoutSecState.value + 1).coerceIn(1, 10)
-                    scope.launch { SettingsRepository.saveDecisionTimeoutSeconds(context, newVal) }
+                    scope.launch { ServiceLocator.settingsRepository.saveDecisionTimeoutSeconds(newVal) }
                 }) { Text("+") }
             }
-
         }
         Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp)
-                .background(Color(0x33000000), shape = CircleShape)
-                .clickable { onBack() }
-                .padding(12.dp)
+            modifier =
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp)
+                    .background(Color(0x33000000), shape = CircleShape)
+                    .clickable { onBack() }
+                    .padding(12.dp),
         ) {
             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
         }
@@ -485,23 +558,28 @@ fun SettingsScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun ColorStripes(colors: List<Color>, modifier: Modifier = Modifier) {
+private fun ColorStripes(
+    colors: List<Color>,
+    modifier: Modifier = Modifier,
+) {
     // Fixed-size preview area: width 160dp, height 16dp, divided into equal rectangular stripes
     Row(
-        modifier = modifier
-            .size(width = 160.dp, height = 16.dp)
-            .background(Color.DarkGray.copy(alpha = 0.2f)),
+        modifier =
+            modifier
+                .size(width = 160.dp, height = 16.dp)
+                .background(Color.DarkGray.copy(alpha = 0.2f)),
         horizontalArrangement = Arrangement.spacedBy(0.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         val shown = colors.ifEmpty { listOf(Color.Gray) }
         val maxShown = 10
         shown.take(maxShown).forEach { c ->
             Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxSize()
-                    .background(c)
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .background(c),
             )
         }
         // If fewer than maxShown, fill the rest with transparent space equally to keep layout stable
@@ -517,17 +595,18 @@ fun HelpScreen(onBack: () -> Unit) {
         Column(
             modifier = Modifier.fillMaxSize().padding(24.dp),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text("Place fingers on the screen. App will choose, group, or order after stabilization.")
         }
         Box(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp)
-                .background(Color(0x33000000), shape = CircleShape)
-                .clickable { onBack() }
-                .padding(12.dp)
+            modifier =
+                Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp)
+                    .background(Color(0x33000000), shape = CircleShape)
+                    .clickable { onBack() }
+                    .padding(12.dp),
         ) {
             Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
         }

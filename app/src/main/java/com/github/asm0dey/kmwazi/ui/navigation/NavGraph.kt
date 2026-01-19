@@ -11,7 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.github.asm0dey.kmwazi.data.SettingsRepository
+import com.github.asm0dey.kmwazi.di.ServiceLocator
 import com.github.asm0dey.kmwazi.ui.PaletteRepository
 import com.github.asm0dey.kmwazi.ui.screens.HelpScreen
 import com.github.asm0dey.kmwazi.ui.screens.HomeScreen
@@ -26,25 +26,17 @@ object Routes {
 }
 
 @Composable
-fun KmwaziNavHost(modifier: Modifier = Modifier, navController: NavHostController = rememberNavController()) {
-    val context = LocalContext.current
-    val hasSettings by SettingsRepository.hasAnySettingsFlow(context).collectAsState(initial = false)
-    val palette by SettingsRepository.paletteFlow(context).collectAsState(initial = com.github.asm0dey.kmwazi.ui.Palettes.Vibrant)
+fun KmwaziNavHost(
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController(),
+) {
+    val settingsRepository = ServiceLocator.settingsRepository
+    val palette by settingsRepository.paletteFlow().collectAsState(initial = com.github.asm0dey.kmwazi.ui.Palettes.Vibrant)
     val navigated = remember { androidx.compose.runtime.mutableStateOf(false) }
 
     // Apply saved palette as early as possible
     LaunchedEffect(palette) {
         PaletteRepository.setPalette(palette)
-    }
-
-    // If there are saved settings, auto-navigate to Touch once
-    LaunchedEffect(hasSettings) {
-        if (hasSettings && !navigated.value) {
-            navigated.value = true
-            navController.navigate(Routes.Touch) {
-                popUpTo(Routes.Home) { inclusive = true }
-            }
-        }
     }
 
     NavHost(navController = navController, startDestination = Routes.Home, modifier = modifier) {

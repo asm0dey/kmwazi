@@ -12,10 +12,10 @@ private val LightColors = lightColorScheme()
 @Composable
 fun KmwaziTheme(
     useDarkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     MaterialTheme(
         colorScheme = if (useDarkTheme) DarkColors else LightColors,
-        content = content
+        content = content,
     )
 }

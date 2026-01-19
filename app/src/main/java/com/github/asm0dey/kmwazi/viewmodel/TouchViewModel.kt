@@ -3,21 +3,27 @@ package com.github.asm0dey.kmwazi.viewmodel
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.github.asm0dey.kmwazi.di.ServiceLocator
+import com.github.asm0dey.kmwazi.domain.CountdownController
 import com.github.asm0dey.kmwazi.domain.Mode
 import com.github.asm0dey.kmwazi.domain.Result
-import com.github.asm0dey.kmwazi.domain.SecureRandomUtils
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import com.github.asm0dey.kmwazi.domain.ResultEngine
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
-class TouchViewModel : ViewModel() {
+class TouchViewModel(
+    private val resultEngine: ResultEngine = ServiceLocator.resultEngine,
+    scope: CoroutineScope? = null,
+) : ViewModel() {
+    private val countdownController = CountdownController(
+        scope = scope ?: viewModelScope,
+        tickMs = TICK_MS,
+    )
     private val _activePoints = MutableStateFlow<Map<Long, Offset>>(emptyMap())
     val activePoints: StateFlow<Map<Long, Offset>> get() = _activePoints
 
-    private val _remainingMs = MutableStateFlow<Long?>(null)
-    val remainingMs: StateFlow<Long?> get() = _remainingMs
+    val remainingMs: StateFlow<Long?> get() = countdownController.remainingMs
 
     private val _inputLocked = MutableStateFlow(false)
     val inputLocked: StateFlow<Boolean> get() = _inputLocked
@@ -33,8 +39,6 @@ class TouchViewModel : ViewModel() {
 
     private val _decisionTimeoutMs = MutableStateFlow(3000L)
     val decisionTimeoutMs: StateFlow<Long> get() = _decisionTimeoutMs
-
-    private var timerJob: Job? = null
 
     fun setMode(newMode: Mode) {
         _mode.value = newMode
@@ -56,7 +60,7 @@ class TouchViewModel : ViewModel() {
         if (newKeys != prevKeys) {
             // Touch set changed
             if (newKeys.isEmpty()) {
-                cancelTimer()
+                countdownController.cancel()
             } else {
                 restartTimer()
             }
@@ -64,7 +68,7 @@ class TouchViewModel : ViewModel() {
     }
 
     fun reset() {
-        cancelTimer()
+        countdownController.cancel()
         _inputLocked.value = false
         _snapshot.value = null
         _activePoints.value = emptyMap()
@@ -72,47 +76,31 @@ class TouchViewModel : ViewModel() {
     }
 
     private fun restartTimer() {
-        cancelTimer()
         val total = _decisionTimeoutMs.value
-        _remainingMs.value = total
-        timerJob = viewModelScope.launch {
-            var remaining = total
-            while (remaining > 0) {
-                delay(TICK_MS)
-                remaining -= TICK_MS
-                _remainingMs.value = remaining
-                // If touches changed to zero during countdown, bail
-                if (_activePoints.value.isEmpty()) {
-                    cancelTimer()
-                    return@launch
-                }
-            }
-            // Expired
-            _remainingMs.value = 0
+        countdownController.start(total) {
+            // Expired - callback runs when countdown finishes
             val snap = _activePoints.value.toMap()
-            _snapshot.value = snap
-            _inputLocked.value = true
-            computeResult(snap)
+            if (snap.isNotEmpty()) {
+                _snapshot.value = snap
+                _inputLocked.value = true
+                computeResult(snap)
+            }
         }
     }
 
     private fun computeResult(snap: Map<Long, Offset>) {
         val ids = snap.keys.toList()
-        _result.value = when (val m = _mode.value) {
-            is Mode.ChooseOne -> Result.One(SecureRandomUtils.chooseOne(ids))
-            is Mode.SplitIntoGroups -> Result.Groups(SecureRandomUtils.splitIntoGroups(ids, m.groupSize))
-            is Mode.DefineOrder -> Result.Order(SecureRandomUtils.defineOrder(ids))
-        }
-    }
-
-    private fun cancelTimer() {
-        timerJob?.cancel()
-        timerJob = null
-        _remainingMs.value = null
+        _result.value =
+            when (val m = _mode.value) {
+                is Mode.ChooseOne -> Result.One(resultEngine.chooseOne(ids))
+                is Mode.SplitIntoGroups -> Result.Groups(resultEngine.splitIntoGroups(ids, m.groupSize))
+                is Mode.DefineOrder -> Result.Order(resultEngine.defineOrder(ids))
+            }
     }
 
     companion object {
         private const val TICK_MS = 100L
+
         // Long-press duration to reset when result is shown
         const val LONG_PRESS_RESET_MS = 500L
     }
