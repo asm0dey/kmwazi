@@ -48,12 +48,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.github.asm0dey.kmwazi.R
 import com.github.asm0dey.kmwazi.di.ServiceLocator.settingsRepository
 import com.github.asm0dey.kmwazi.ui.PaletteRepository
 import com.github.asm0dey.kmwazi.ui.Palettes
@@ -75,7 +77,7 @@ fun SettingsScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Select color palette", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.settings_palette_title), fontWeight = FontWeight.Bold)
 
             // Current selection preview (fixed-size stripes)
             ColorStripes(colors = current.colors)
@@ -89,12 +91,12 @@ fun SettingsScreen(onBack: () -> Unit) {
                     modifier =
                         Modifier
                             .background(MaterialTheme.colorScheme.surface)
-                            .clickable(onClickLabel = "Select palette") { expandedState.value = true }
+                            .clickable(onClickLabel = stringResource(R.string.settings_palette_label)) { expandedState.value = true }
                             .padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
                     // Show compact stripes next to the name to hint it is a selector
                     ColorStripes(colors = current.colors, modifier = Modifier.size(width = 60.dp, height = 24.dp))
-                    Text(current.name, color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(current.nameRes), color = MaterialTheme.colorScheme.onSurface)
                 }
                 DropdownMenu(
                     expanded = expandedState.value,
@@ -112,7 +114,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                                         modifier = Modifier.size(width = 60.dp, height = 24.dp),
                                     )
                                     Text(
-                                        palette.name,
+                                        stringResource(palette.nameRes),
                                         color = MaterialTheme.colorScheme.onSurface,
                                     )
                                 }
@@ -132,7 +134,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Text("Decision timeout:", color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.settings_timeout_label), color = MaterialTheme.colorScheme.onSurface)
                 Button(
                     onClick = {
                         val newVal = (timeoutSecState.value - 1).coerceIn(1, 10)
@@ -142,10 +144,11 @@ fun SettingsScreen(onBack: () -> Unit) {
                     shape = CircleShape,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
                 ) {
-                    Text("-", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { contentDescription = "Decrease timeout" })
+                    val decreaseDescription = stringResource(R.string.settings_timeout_decrease)
+                    Text("-", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { contentDescription = decreaseDescription })
                 }
                 Text(
-                    "${timeoutSecState.value}s",
+                    stringResource(R.string.settings_timeout_value, timeoutSecState.value),
                     color = MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier.padding(horizontal = 8.dp).semantics { liveRegion = LiveRegionMode.Polite }
@@ -159,7 +162,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                     shape = CircleShape,
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
                 ) {
-                    Text("+", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { contentDescription = "Increase timeout" })
+                    val increaseDescription = stringResource(R.string.settings_timeout_increase)
+                    Text("+", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { contentDescription = increaseDescription })
                 }
             }
         }
@@ -172,7 +176,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                     .clickable { onBack() }
                     .padding(12.dp),
         ) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.settings_close), tint = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">kmwazi</string>
+    <string name="home_title">Kmwazi</string>
+    <string name="home_start">Start</string>
+    <string name="home_settings">Einstellungen</string>
+    <string name="home_help">Hilfe</string>
+
+    <string name="settings_palette_title">Farbpalette wählen</string>
+    <string name="settings_palette_label">Palette wählen</string>
+    <string name="settings_timeout_label">Entscheidungs-Timeout:</string>
+    <string name="settings_timeout_decrease">Timeout verringern</string>
+    <string name="settings_timeout_increase">Timeout erhöhen</string>
+    <string name="settings_close">Schließen</string>
+
+    <string name="help_text">Legen Sie die Finger auf den Bildschirm. Die App wird nach der Stabilisierung auswählen, gruppieren oder ordnen.</string>
+
+    <string name="touch_winner_selected">Gewinner ausgewählt</string>
+    <string name="touch_groups_formed">Gruppen gebildet</string>
+    <string name="touch_order_defined">Reihenfolge festgelegt</string>
+    <string name="touch_mode_choose_one">Modus: Einen auswählen</string>
+    <string name="touch_mode_groups">Modus: Gruppen (%1$d)</string>
+    <string name="touch_mode_play_order">Modus: Reihenfolge</string>
+    <string name="touch_selection_mode_title">Auswahlmodus</string>
+    <string name="touch_choose_one">Einen auswählen</string>
+    <string name="touch_play_order">Reihenfolge</string>
+    <string name="touch_groups">Gruppen</string>
+    <string name="touch_group_size">Gruppengröße: %1$d</string>
+    <string name="touch_reset">Zurücksetzen</string>
+
+    <string name="settings_timeout_value">%1$ds</string>
+    <string name="palette_vibrant">Lebhaft</string>
+    <string name="palette_pastel">Pastell</string>
+    <string name="palette_lucid">Klar</string>
+    <string name="palette_colorblind">Farbenblind</string>
+</resources>

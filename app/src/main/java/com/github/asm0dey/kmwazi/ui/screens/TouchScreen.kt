@@ -69,8 +69,10 @@ import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import com.github.asm0dey.kmwazi.R
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -146,14 +148,13 @@ fun TouchScreen(onBack: () -> Unit) {
         }
     }
 
-    val resultAnnouncement = remember(result) {
+    val resultAnnouncement =
         when (result) {
-            is com.github.asm0dey.kmwazi.domain.Result.One -> "Winner selected"
-            is com.github.asm0dey.kmwazi.domain.Result.Groups -> "Groups formed"
-            is com.github.asm0dey.kmwazi.domain.Result.Order -> "Order defined"
+            is com.github.asm0dey.kmwazi.domain.Result.One -> stringResource(R.string.touch_winner_selected)
+            is com.github.asm0dey.kmwazi.domain.Result.Groups -> stringResource(R.string.touch_groups_formed)
+            is com.github.asm0dey.kmwazi.domain.Result.Order -> stringResource(R.string.touch_order_defined)
             else -> ""
         }
-    }
 
     // Pulsing animation for active points
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
@@ -237,9 +238,9 @@ fun TouchScreen(onBack: () -> Unit) {
             Button(onClick = { showModeSheet.value = true }) {
                 Text(
                     when (mode) {
-                        is Mode.ChooseOne -> "Mode: Choose One"
-                        is Mode.SplitIntoGroups -> "Mode: Groups (${mode.groupSize})"
-                        is Mode.DefineOrder -> "Mode: Play Order"
+                        is Mode.ChooseOne -> stringResource(R.string.touch_mode_choose_one)
+                        is Mode.SplitIntoGroups -> stringResource(R.string.touch_mode_groups, mode.groupSize)
+                        is Mode.DefineOrder -> stringResource(R.string.touch_mode_play_order)
                     }
                 )
             }
@@ -256,13 +257,13 @@ fun TouchScreen(onBack: () -> Unit) {
                         .padding(bottom = 32.dp)
                 ) {
                     Text(
-                        "Selection Mode",
+                        stringResource(R.string.touch_selection_mode_title),
                         style = MaterialTheme.typography.titleLarge,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
                     DropdownMenuItem(
-                        text = { Text("Choose One") },
+                        text = { Text(stringResource(R.string.touch_choose_one)) },
                         onClick = {
                             vm.setMode(Mode.ChooseOne)
                             scope.launch { settingsRepository.saveMode(Mode.ChooseOne) }
@@ -273,7 +274,7 @@ fun TouchScreen(onBack: () -> Unit) {
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Play Order") },
+                        text = { Text(stringResource(R.string.touch_play_order)) },
                         onClick = {
                             vm.setMode(Mode.DefineOrder)
                             scope.launch { settingsRepository.saveMode(Mode.DefineOrder) }
@@ -284,7 +285,7 @@ fun TouchScreen(onBack: () -> Unit) {
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Groups") },
+                        text = { Text(stringResource(R.string.touch_groups)) },
                         onClick = {
                             val m = Mode.SplitIntoGroups(groupSizeState.intValue)
                             vm.setMode(m)
@@ -321,7 +322,7 @@ fun TouchScreen(onBack: () -> Unit) {
                                 Text("-", style = MaterialTheme.typography.headlineSmall)
                             }
                             Text(
-                                "Group size: ${groupSizeState.intValue}",
+                                stringResource(R.string.touch_group_size, groupSizeState.intValue),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                             Button(
@@ -380,7 +381,7 @@ fun TouchScreen(onBack: () -> Unit) {
                         fingerColors.clear()
                     }
                 ) {
-                    Text("Reset")
+                    Text(stringResource(R.string.touch_reset))
                 }
             }
             Box(
@@ -390,7 +391,7 @@ fun TouchScreen(onBack: () -> Unit) {
                     .clickable { onBack() }
                     .padding(12.dp),
             ) {
-                Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.settings_close), tint = MaterialTheme.colorScheme.onSurface)
             }
         }
     }

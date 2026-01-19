@@ -38,7 +38,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.github.asm0dey.kmwazi.R
 import com.github.asm0dey.kmwazi.ui.navigation.Screen
 
 @Composable
@@ -49,7 +51,7 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            "Kmwazi",
+            stringResource(R.string.home_title),
             style = MaterialTheme.typography.displayLarge,
             modifier = Modifier.padding(bottom = 48.dp)
         )
@@ -57,22 +59,22 @@ fun HomeScreen(onNavigate: (String) -> Unit) {
             onClick = { onNavigate(Screen.Touch.route) },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Icon(Icons.Default.PlayArrow, contentDescription = "Start game")
-            Text(" Start ", style = MaterialTheme.typography.labelLarge)
+            Icon(Icons.Default.PlayArrow, contentDescription = stringResource(R.string.home_start))
+            Text(" ${stringResource(R.string.home_start)} ", style = MaterialTheme.typography.labelLarge)
         }
         Button(
             onClick = { onNavigate(Screen.Settings.route) },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Icon(Icons.Default.Settings, contentDescription = "Settings")
-            Text(" Settings ", style = MaterialTheme.typography.labelLarge)
+            Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.home_settings))
+            Text(" ${stringResource(R.string.home_settings)} ", style = MaterialTheme.typography.labelLarge)
         }
         Button(
             onClick = { onNavigate(Screen.Help.route) },
             modifier = Modifier.fillMaxWidth(0.7f)
         ) {
-            Icon(Icons.AutoMirrored.Filled.Help, contentDescription = "Help")
-            Text(" Help ", style = MaterialTheme.typography.labelLarge)
+            Icon(Icons.AutoMirrored.Filled.Help, contentDescription = stringResource(R.string.home_help))
+            Text(" ${stringResource(R.string.home_help)} ", style = MaterialTheme.typography.labelLarge)
         }
     }
 }

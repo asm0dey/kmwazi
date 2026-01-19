@@ -52,9 +52,10 @@ class DataStoreSettingsRepository(private val dataStore: DataStore<Preferences>)
     override fun paletteFlow(): Flow<Palette> =
         dataStore.data.map { prefs ->
             when (prefs[KEY_PALETTE]) {
-                Palettes.Pastel.name -> Palettes.Pastel
-                Palettes.Colorblind.name -> Palettes.Colorblind
-                Palettes.Vibrant.name -> Palettes.Vibrant
+                Palettes.Pastel.id -> Palettes.Pastel
+                Palettes.Colorblind.id -> Palettes.Colorblind
+                Palettes.Lucid.id -> Palettes.Lucid
+                Palettes.Vibrant.id -> Palettes.Vibrant
                 else -> Palettes.Vibrant
             }
         }
@@ -79,7 +80,7 @@ class DataStoreSettingsRepository(private val dataStore: DataStore<Preferences>)
 
     override suspend fun savePalette(palette: Palette) {
         dataStore.edit { prefs ->
-            prefs[KEY_PALETTE] = palette.name
+            prefs[KEY_PALETTE] = palette.id
         }
     }
 

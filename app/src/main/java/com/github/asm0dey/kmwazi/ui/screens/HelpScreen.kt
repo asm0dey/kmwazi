@@ -38,7 +38,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.github.asm0dey.kmwazi.R
 
 @Composable
 fun HelpScreen(onBack: () -> Unit) {
@@ -48,7 +50,7 @@ fun HelpScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text("Place fingers on the screen. App will choose, group, or order after stabilization.")
+            Text(stringResource(R.string.help_text))
         }
         Box(
             modifier =
@@ -59,7 +61,7 @@ fun HelpScreen(onBack: () -> Unit) {
                     .clickable { onBack() }
                     .padding(12.dp),
         ) {
-            Icon(Icons.Default.Close, contentDescription = "Close", tint = MaterialTheme.colorScheme.onSurface)
+            Icon(Icons.Default.Close, contentDescription = stringResource(R.string.settings_close), tint = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

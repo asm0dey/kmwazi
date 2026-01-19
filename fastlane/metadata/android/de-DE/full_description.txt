@@ -1,0 +1,16 @@
+Kmwazi ist eine Multi-Touch-Zufallsgenerator-App für Android, inspiriert von Chwazi. Sie hilft Ihnen dabei, schnell und fair Einzelpersonen auszuwählen, Gruppen zu bilden oder die Spielreihenfolge mithilfe von Fingerberührungen auf Ihrem Bildschirm zu bestimmen.
+
+Funktionen:
+- Einen auswählen: Wählt zufällig eine einzelne Person aus der Gruppe aus.
+- In Gruppen aufteilen: Teilt die Teilnehmer in Gruppen einer bestimmten Größe auf.
+- Reihenfolge festlegen: Weist allen Teilnehmern eine zufällige Sequenz zu.
+- Anpassbarer Stabilisierungs-Timeout (1 bis 10 Sekunden).
+- Mehrere Farbpaletten für visuelle Vielfalt.
+- Kontrastreiches, barrierefreies Design.
+
+Anwendung:
+1. Starten Sie die App und tippen Sie auf dem Startbildschirm auf "Start".
+2. Wählen Sie oben auf dem Bildschirm den gewünschten Modus aus: "Einen auswählen", "Gruppen" oder "Reihenfolge".
+3. Lassen Sie jeden einen Finger auf den Bildschirm legen.
+4. Halten Sie Ihre Finger still. Die App startet einen Countdown, sobald sich die Berührungen stabilisiert haben.
+5. Sobald der Countdown abgelaufen ist, wird das Ergebnis mit Animationen und Farben angezeigt.

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">kmwazi</string>
+    <string name="home_title">Kmwazi</string>
+    <string name="home_start">Старт</string>
+    <string name="home_settings">Настройки</string>
+    <string name="home_help">Помощь</string>
+
+    <string name="settings_palette_title">Выберите цветовую палитру</string>
+    <string name="settings_palette_label">Выбрать палитру</string>
+    <string name="settings_timeout_label">Таймаут принятия решения:</string>
+    <string name="settings_timeout_decrease">Уменьшить таймаут</string>
+    <string name="settings_timeout_increase">Увеличить таймаут</string>
+    <string name="settings_close">Закрыть</string>
+
+    <string name="help_text">Приложите пальцы к экрану. Приложение выберет, сгруппирует или упорядочит их после стабилизации.</string>
+
+    <string name="touch_winner_selected">Победитель выбран</string>
+    <string name="touch_groups_formed">Группы сформированы</string>
+    <string name="touch_order_defined">Порядок определен</string>
+    <string name="touch_mode_choose_one">Режим: Выбрать одного</string>
+    <string name="touch_mode_groups">Режим: Группы (%1$d)</string>
+    <string name="touch_mode_play_order">Режим: Порядок игры</string>
+    <string name="touch_selection_mode_title">Режим выбора</string>
+    <string name="touch_choose_one">Выбрать одного</string>
+    <string name="touch_play_order">Порядок игры</string>
+    <string name="touch_groups">Группы</string>
+    <string name="touch_group_size">Размер группы: %1$d</string>
+    <string name="touch_reset">Сброс</string>
+
+    <string name="settings_timeout_value">%1$dc</string>
+    <string name="palette_vibrant">Яркая</string>
+    <string name="palette_pastel">Пастельная</string>
+    <string name="palette_lucid">Чистая</string>
+    <string name="palette_colorblind">Для дальтоников</string>
+</resources>

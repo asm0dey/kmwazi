@@ -23,6 +23,7 @@
 package com.github.asm0dey.kmwazi.ui
 
 import androidx.compose.ui.graphics.Color
+import com.github.asm0dey.kmwazi.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -37,12 +38,13 @@ object PaletteRepository {
 }
 
 // Palette model and predefined palettes
-data class Palette(val name: String, val colors: List<Color>)
+data class Palette(val id: String, val nameRes: Int, val colors: List<Color>)
 
 object Palettes {
     val Vibrant =
         Palette(
-            name = "Vibrant",
+            id = "vibrant",
+            nameRes = R.string.palette_vibrant,
             colors =
                 listOf(
                     Color(0xFFFF0000), // Red
@@ -60,7 +62,8 @@ object Palettes {
 
     val Pastel =
         Palette(
-            name = "Pastel",
+            id = "pastel",
+            nameRes = R.string.palette_pastel,
             colors =
                 listOf(
                     Color(0xFFFFB3BA), // Pastel Red
@@ -78,7 +81,8 @@ object Palettes {
 
     val Lucid =
         Palette(
-            name = "Lucid",
+            id = "lucid",
+            nameRes = R.string.palette_lucid,
             colors =
                 listOf(
                     Color(0xFF2E5BFF), // Lucid Blue
@@ -96,7 +100,8 @@ object Palettes {
 
     val Colorblind =
         Palette(
-            name = "Colorblind",
+            id = "colorblind",
+            nameRes = R.string.palette_colorblind,
             colors =
                 listOf(
                     Color(0xFF000000), // Black
