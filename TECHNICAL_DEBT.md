@@ -5,8 +5,8 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 
 ## Quick Status Overview
 
-- [ ] Phase 0: Safety net and hygiene
-- [ ] Phase 1: Architecture and testability
+- [x] Phase 0: Safety net and hygiene
+- [x] Phase 1: Architecture and testability
 - [ ] Phase 2: UI separation and theming
 - [ ] Phase 3: Accessibility and UX polish
 - [ ] Phase 4: Performance and stability
@@ -17,18 +17,18 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 ## Phase 0: Safety Net and Hygiene
 
 ### Code Quality Tools
-- [ ] Add ktlint/spotless with baseline configuration
-- [ ] Configure Compose-specific lint checks
-- [ ] Add accessibility lint checks
+- [x] Add ktlint/spotless with baseline configuration
+- [x] Configure Compose-specific lint checks
+- [x] Add accessibility lint checks
 - [ ] Introduce detekt (optional) for long files and complexity reporting
 
 ### Testing Foundation
-- [ ] Add basic unit tests for domain utilities (SecureRandomUtils)
-- [ ] Add basic unit tests for ViewModel timer logic
-- [ ] Set up test infrastructure for deterministic random testing
+- [x] Add basic unit tests for domain utilities (SecureRandomUtils)
+- [x] Add basic unit tests for ViewModel timer logic
+- [x] Set up test infrastructure for deterministic random testing
 
 ### Process
-- [ ] Establish CHANGELOG.md for tracking changes
+- [x] Establish CHANGELOG.md for tracking changes
 - [ ] Add CODEOWNERS file (optional)
 
 ---
@@ -36,60 +36,60 @@ Based on the detailed refactoring plan in `docs/plan.md`.
 ## Phase 1: Architecture and Testability
 
 ### Dependency Injection Setup
-- [ ] Create `RandomProvider` interface
-  - [ ] Define `fun nextInt(bound: Int): Int`
-  - [ ] Define `fun <T> shuffle(list: List<T>): List<T>`
-- [ ] Implement `SecureRandomProvider` using `java.security.SecureRandom`
-- [ ] Create `SettingsRepository` interface
-- [ ] Implement `DataStoreSettingsRepository`
-- [ ] Set up simple ServiceLocator or DI container (Hilt/Koin for later)
+- [x] Create `RandomProvider` interface
+  - [x] Define `fun nextInt(bound: Int): Int`
+  - [x] Define `fun <T> shuffle(list: List<T>): List<T>`
+- [x] Implement `SecureRandomProvider` using `java.security.SecureRandom`
+- [x] Create `SettingsRepository` interface
+- [x] Implement `DataStoreSettingsRepository`
+- [x] Set up simple ServiceLocator or DI container (Hilt/Koin for later)
 
 ### Domain Logic Extraction
-- [ ] Create pure `ResultEngine` domain service
-- [ ] Inject `RandomProvider` into `ResultEngine`
-- [ ] Move result computation from ViewModel to `ResultEngine`
-- [ ] Refactor `SecureRandomUtils` into `ResultEngine`
+- [x] Create pure `ResultEngine` domain service
+- [x] Inject `RandomProvider` into `ResultEngine`
+- [x] Move result computation from ViewModel to `ResultEngine`
+- [x] Refactor `SecureRandomUtils` into `ResultEngine`
 
 ### ViewModel Refactoring
-- [ ] Inject `ResultEngine` into `TouchViewModel`
-- [ ] Extract timer logic into `CountdownController` for testability
-- [ ] Make timer logic pure and unit-testable
+- [x] Inject `ResultEngine` into `TouchViewModel`
+- [x] Extract timer logic into `CountdownController` for testability
+- [x] Make timer logic pure and unit-testable
 
 ### Unit Tests
-- [ ] Test `ResultEngine.chooseOne()` with edge cases
-- [ ] Test `ResultEngine.splitIntoGroups()` with edge cases:
-  - [ ] Empty list handling
-  - [ ] groupSize <= 0 rejection
-  - [ ] groupSize > list size handling
-- [ ] Test `ResultEngine.defineOrder()` with various sizes
-- [ ] Test `CountdownController` timer behavior
-- [ ] Test `DataStoreSettingsRepository` (using TestDataStore)
+- [x] Test `ResultEngine.chooseOne()` with edge cases
+- [x] Test `ResultEngine.splitIntoGroups()` with edge cases:
+  - [x] Empty list handling
+  - [x] groupSize <= 0 rejection
+  - [x] groupSize > list size handling
+- [x] Test `ResultEngine.defineOrder()` with various sizes
+- [x] Test `CountdownController` timer behavior
+- [x] Test `DataStoreSettingsRepository` (using TestDataStore)
 
 ---
 
 ## Phase 2: UI Separation and Theming
 
 ### File Splitting (Break up Screens.kt - 535 lines)
-- [ ] Extract `HomeScreen.kt` from `Screens.kt`
-- [ ] Extract `TouchScreen.kt` from `Screens.kt`
-- [ ] Extract `SettingsScreen.kt` from `Screens.kt`
-- [ ] Extract `HelpScreen.kt` from `Screens.kt`
+- [x] Extract `HomeScreen.kt` from `Screens.kt`
+- [x] Extract `TouchScreen.kt` from `Screens.kt`
+- [x] Extract `SettingsScreen.kt` from `Screens.kt`
+- [x] Extract `HelpScreen.kt` from `Screens.kt`
 - [ ] Create `ui/draw/FingerCanvas.kt` for drawing logic
-- [ ] Create `ui/gestures/MultiTouchTracker.kt` for pointer tracking
-- [ ] Delete original oversized `Screens.kt` file
+- [x] Create `ui/gestures/MultiTouchTracker.kt` for pointer tracking
+- [x] Delete original oversized `Screens.kt` file
 
 ### Gesture Handling Extraction
-- [ ] Extract pointer tracking into reusable `pointerInput` helper
+- [x] Extract pointer tracking into reusable `pointerInput` helper
 - [ ] Create clear callbacks interface for touch events
 - [ ] Move long-press reset logic out of Canvas block
 - [ ] Implement higher-level gesture handler with clear states
 
 ### Theming Integration
-- [ ] Extend `KmwaziTheme` to accept Palette parameter
-- [ ] Derive Material3 `colorScheme` from selected palette
-  - [ ] Map palette colors to primary/secondary/tertiary
-  - [ ] Set surface/background colors from palette
-- [ ] Remove hardcoded `Color.Black` backgrounds
+- [x] Extend `KmwaziTheme` to accept Palette parameter
+- [x] Derive Material3 `colorScheme` from selected palette
+- [x] Map palette colors to primary/secondary/tertiary
+- [x] Set surface/background colors from palette
+- [x] Remove hardcoded `Color.Black` backgrounds
 - [ ] Replace all hardcoded colors with `MaterialTheme.colorScheme` references
 - [ ] Test theme with all three palettes
 
