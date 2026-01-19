@@ -1,1 +1,1 @@
-Multi-Touch-Zufallsgenerator zur Auswahl von Personen, zur Gruppenbildung oder zur Festlegung der Spielreihenfolge.
+Multi-Touch-Zufallsgenerator für Auswahl, Gruppen oder Spielreihenfolge
