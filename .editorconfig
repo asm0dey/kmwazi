@@ -9,16 +9,13 @@ insert_final_newline = true
 max_line_length = 120
 trim_trailing_whitespace = true
 
+# noinspection EditorConfigKeyCorrectness
 [*.{kt,kts}]
 ij_kotlin_allow_trailing_comma = true
 ij_kotlin_allow_trailing_comma_on_call_site = true
 
 # Disable specific ktlint rules
 ktlint_standard_no-wildcard-imports = disabled
-ktlint_standard_function-naming = disabled
-ktlint_standard_property-naming = disabled
-ktlint_standard_max-line-length = disabled
-ktlint_standard_comment-wrapping = disabled
 
 [*.md]
 trim_trailing_whitespace = false

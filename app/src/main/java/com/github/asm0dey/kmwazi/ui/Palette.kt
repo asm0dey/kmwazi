@@ -23,16 +23,16 @@ object Palettes {
             name = "Vibrant",
             colors =
                 listOf(
-                    Color(0xffff4d4d), // Red
-                    Color(0xFFff8052), // Blue
-                    Color(0xFFffb347), // Green
-                    Color(0xFFffd900), // Amber
-                    Color(0xFF80ff00), // Purple
-                    Color(0xFF00fa9a), // Deep Orange
-                    Color(0xFF00bfff), // Cyan
-                    Color(0xFF1f8fff), // Deep Purple
-                    Color(0xFF8a2ce2), // Yellow
-                    Color(0xFFff6bb5), // Teal
+                    Color(0xFFFF0000), // Red
+                    Color(0xFFFF8000), // Orange
+                    Color(0xFFFFFF00), // Yellow
+                    Color(0xFF00FF00), // Green
+                    Color(0xFF00FFFF), // Cyan
+                    Color(0xFF0000FF), // Blue
+                    Color(0xFFFF00FF), // Magenta
+                    Color(0xFF8000FF), // Violet
+                    Color(0xFF00FF80), // Spring Green
+                    Color(0xFFFF007F), // Rose
                 ),
         )
 
@@ -41,16 +41,16 @@ object Palettes {
             name = "Pastel",
             colors =
                 listOf(
-                    Color(0xffffd1dc), // light red
-                    Color(0xffffb3ba), // light blue
-                    Color(0xffffdeb8), // light green
-                    Color(0xffffffb8), // light yellow
-                    Color(0xffb8ffc7), // light purple
-                    Color(0xffb8e0ff), // light orange
-                    Color(0xffd6bce1), // light cyan
-                    Color(0xfff9c8cb), // light deep purple
-                    Color(0xfff7e2d9), // light amber
-                    Color(0xffc1e1c1), // light teal
+                    Color(0xFFFFB3BA), // Pastel Red
+                    Color(0xFFFFDFBA), // Pastel Orange
+                    Color(0xFFFFFFBA), // Pastel Yellow
+                    Color(0xFFBAFFC9), // Pastel Green
+                    Color(0xFFBAE1FF), // Pastel Blue
+                    Color(0xFFE0BBE4), // Pastel Purple
+                    Color(0xFFFFC4E1), // Pastel Pink
+                    Color(0xFFBFFCC6), // Pastel Mint
+                    Color(0xFFD4F0F0), // Pastel Cyan
+                    Color(0xFFFFEECC), // Pastel Peach
                 ),
         )
 
@@ -59,16 +59,16 @@ object Palettes {
             name = "Lucid",
             colors =
                 listOf(
-                    Color(0xffa3d2ca),
-                    Color(0xff70a9a1),
-                    Color(0xff4b7c5a),
-                    Color(0xfff4d35d),
-                    Color(0xffee9649),
-                    Color(0xfff95939),
-                    Color(0xffd92632),
-                    Color(0xff9e1031),
-                    Color(0xff560b0e),
-                    Color(0xffa5b4ef),
+                    Color(0xFF2E5BFF), // Lucid Blue
+                    Color(0xFF8C52FF), // Lucid Purple
+                    Color(0xFFFF2E63), // Lucid Pink/Red
+                    Color(0xFF08D9D6), // Lucid Teal
+                    Color(0xFFFFDE7D), // Lucid Yellow
+                    Color(0xFFF9A828), // Lucid Orange
+                    Color(0xFF4E9F3D), // Lucid Green
+                    Color(0xFF950101), // Lucid Deep Red
+                    Color(0xFF191919), // Lucid Blackish
+                    Color(0xFF005A8D), // Lucid Navy
                 ),
         )
 
@@ -77,16 +77,16 @@ object Palettes {
             name = "Colorblind",
             colors =
                 listOf(
-                    Color(0xff7d7d28), // Blue
-                    Color(0xffa5a557), // Vermillion
-                    Color(0xffbbbb6d), // Green
-                    Color(0xffcfcf83), // Orange
-                    Color(0xffe2e2a3), // Reddish purple
-                    Color(0xfff5f5c3), // Sky blue
-                    Color(0xffc7c7ab), // Yellow
-                    Color(0xFF989894), // Grey
-                    Color(0xff7b7b92), // Grey
-                    Color(0xff5a5a8a), // Grey
+                    Color(0xFF000000), // Black
+                    Color(0xFFE69F00), // Orange
+                    Color(0xFF56B4E9), // Sky Blue
+                    Color(0xFF009E73), // Bluish Green
+                    Color(0xFFF0E442), // Yellow
+                    Color(0xFF0072B2), // Blue
+                    Color(0xFFD55E00), // Vermillion
+                    Color(0xFFCC79A7), // Reddish Purple
+                    Color(0xFF999999), // Grey
+                    Color(0xFFFFFFFF), // White
                 ),
         )
 

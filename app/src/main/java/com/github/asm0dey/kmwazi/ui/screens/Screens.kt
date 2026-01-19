@@ -24,9 +24,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,11 +48,10 @@ import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUp
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.github.asm0dey.kmwazi.di.ServiceLocator
+import com.github.asm0dey.kmwazi.di.ServiceLocator.settingsRepository
 import com.github.asm0dey.kmwazi.domain.Mode
 import com.github.asm0dey.kmwazi.domain.Result
 import com.github.asm0dey.kmwazi.ui.PaletteRepository
@@ -94,7 +96,6 @@ fun TouchScreen(onBack: () -> Unit) {
     val mode = vm.mode.collectAsState().value
     val result = vm.result.collectAsState().value
 
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
     // Haptic feedback
@@ -107,14 +108,14 @@ fun TouchScreen(onBack: () -> Unit) {
     val groupSizeState = remember { mutableIntStateOf(2) }
 
     // Load saved mode and decision timeout on first composition
-    androidx.compose.runtime.LaunchedEffect(Unit) {
-        val savedMode = ServiceLocator.settingsRepository.modeFlow().first()
+    LaunchedEffect(Unit) {
+        val savedMode = settingsRepository.modeFlow().first()
         if (savedMode is Mode.SplitIntoGroups) {
             groupSizeState.intValue = savedMode.groupSize
         }
         vm.setMode(savedMode)
 
-        val timeoutSec = ServiceLocator.settingsRepository.decisionTimeoutSecondsFlow().first()
+        val timeoutSec = settingsRepository.decisionTimeoutSecondsFlow().first()
         vm.setDecisionTimeoutSeconds(timeoutSec)
     }
 
@@ -123,7 +124,7 @@ fun TouchScreen(onBack: () -> Unit) {
     val showOverlay = remember { androidx.compose.runtime.mutableStateOf(false) }
 
     // Haptic when results are ready / countdown finished
-    androidx.compose.runtime.LaunchedEffect(result) {
+    LaunchedEffect(result) {
         if (result != null) {
             haptic.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
             showOverlay.value = true
@@ -226,38 +227,38 @@ fun TouchScreen(onBack: () -> Unit) {
                 )
             }
 
-            androidx.compose.material3.DropdownMenu(
+            DropdownMenu(
                 expanded = modeMenuExpanded.value,
                 onDismissRequest = { modeMenuExpanded.value = false },
             ) {
-                androidx.compose.material3.DropdownMenuItem(
+                DropdownMenuItem(
                     text = { Text("Choose One") },
                     onClick = {
                         vm.setMode(Mode.ChooseOne)
-                        scope.launch { ServiceLocator.settingsRepository.saveMode(Mode.ChooseOne) }
+                        scope.launch { settingsRepository.saveMode(Mode.ChooseOne) }
                         vm.reset()
                         points.clear()
                         modeMenuExpanded.value = false
                     },
                     enabled = true,
                 )
-                androidx.compose.material3.DropdownMenuItem(
+                DropdownMenuItem(
                     text = { Text("Play Order") },
                     onClick = {
                         vm.setMode(Mode.DefineOrder)
-                        scope.launch { ServiceLocator.settingsRepository.saveMode(Mode.DefineOrder) }
+                        scope.launch { settingsRepository.saveMode(Mode.DefineOrder) }
                         vm.reset()
                         points.clear()
                         modeMenuExpanded.value = false
                     },
                     enabled = true,
                 )
-                androidx.compose.material3.DropdownMenuItem(
+                DropdownMenuItem(
                     text = { Text("Groups") },
                     onClick = {
                         val m = Mode.SplitIntoGroups(groupSizeState.intValue)
                         vm.setMode(m)
-                        scope.launch { ServiceLocator.settingsRepository.saveMode(m) }
+                        scope.launch { settingsRepository.saveMode(m) }
                         vm.reset()
                         points.clear()
                         // keep menu open to allow adjusting size if desired
@@ -267,7 +268,7 @@ fun TouchScreen(onBack: () -> Unit) {
 
                 // Show group size controls ONLY when group mode is selected
                 if (mode is Mode.SplitIntoGroups) {
-                    androidx.compose.material3.DropdownMenuItem(
+                    DropdownMenuItem(
                         text = {
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -278,7 +279,7 @@ fun TouchScreen(onBack: () -> Unit) {
                                         groupSizeState.intValue -= 1
                                         val m = Mode.SplitIntoGroups(groupSizeState.intValue)
                                         vm.setMode(m)
-                                        scope.launch { ServiceLocator.settingsRepository.saveMode(m) }
+                                        scope.launch { settingsRepository.saveMode(m) }
                                         vm.reset()
                                         points.clear()
                                     }
@@ -289,7 +290,7 @@ fun TouchScreen(onBack: () -> Unit) {
                                         groupSizeState.intValue += 1
                                         val m = Mode.SplitIntoGroups(groupSizeState.intValue)
                                         vm.setMode(m)
-                                        scope.launch { ServiceLocator.settingsRepository.saveMode(m) }
+                                        scope.launch { settingsRepository.saveMode(m) }
                                         vm.reset()
                                         points.clear()
                                     }
@@ -334,12 +335,12 @@ fun TouchScreen(onBack: () -> Unit) {
                                     val idx = nextColorIndexState.intValue % palette.colors.size.coerceAtLeast(1)
                                     val c = palette.colors.getOrElse(idx) { Color(0xFF00E5FF) }
                                     fingerColors[id] = c
-                                    nextColorIndexState.intValue = nextColorIndexState.intValue + 1
+                                    nextColorIndexState.intValue += 1
                                     c
                                 }
                             }
                             groupsMap != null -> groupColors[groupsMap[id]!! % groupColors.size]
-                            winnerId != null && id == winnerId -> Color(0xFF4CAF50)
+                            winnerId != null && id == winnerId -> fingerColors[id] ?: Color(0xFF4CAF50)
                             winnerId != null -> Color(0xFF444444)
                             else -> Color(0xFF4CAF50)
                         }
@@ -383,7 +384,7 @@ fun TouchScreen(onBack: () -> Unit) {
                         val maxRadius = hypot(this.size.width.toDouble(), this.size.height.toDouble()).toFloat()
                         val r = maxRadius * resultProgress.value
                         val color = fingerColors[winnerIdOverlay] ?: palette.colors.firstOrNull() ?: Color(0xFF4CAF50)
-                        drawCircle(color = color, radius = r, center = center)
+                        drawCircle(color = color.copy(alpha = 0.5f), radius = r, center = center)
                     }
                     is Result.Order -> {
                         val firstId = result.order.firstOrNull()
@@ -399,12 +400,12 @@ fun TouchScreen(onBack: () -> Unit) {
                                     fid ->
                                 fingerColors[fid]
                             } ?: palette.colors.firstOrNull() ?: Color(0xFF2196F3)
-                        drawCircle(color = color, radius = r, center = center)
+                        drawCircle(color = color.copy(alpha = 0.5f), radius = r, center = center)
                     }
                     is Result.Groups -> {
                         val h = this.size.height * resultProgress.value
                         val color = palette.colors.firstOrNull() ?: Color(0xFF2196F3)
-                        drawRect(color = color, size = androidx.compose.ui.geometry.Size(this.size.width, h))
+                        drawRect(color = color.copy(alpha = 0.5f), size = androidx.compose.ui.geometry.Size(this.size.width, h))
                     }
                 }
             }
@@ -458,10 +459,9 @@ private suspend fun PointerInputScope.trackMultiTouch(
 fun SettingsScreen(onBack: () -> Unit) {
     val current = PaletteRepository.current.collectAsState().value
     val expandedState = remember { androidx.compose.runtime.mutableStateOf(false) }
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val timeoutSecState =
-        ServiceLocator.settingsRepository
+        settingsRepository
             .decisionTimeoutSecondsFlow()
             .collectAsState(initial = 3)
 
@@ -476,7 +476,7 @@ fun SettingsScreen(onBack: () -> Unit) {
             // Current selection preview (fixed-size stripes)
             ColorStripes(colors = current.colors)
 
-            // Simple combobox using Button + DropdownMenu
+            // Simple combo box using Button + DropdownMenu
             Box {
                 // Non-button trigger styled as a surface-like clickable area
                 Row(
@@ -492,12 +492,12 @@ fun SettingsScreen(onBack: () -> Unit) {
                     ColorStripes(colors = current.colors, modifier = Modifier.size(width = 60.dp, height = 24.dp))
                     Text(current.name, color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface)
                 }
-                androidx.compose.material3.DropdownMenu(
+                DropdownMenu(
                     expanded = expandedState.value,
                     onDismissRequest = { expandedState.value = false },
                 ) {
                     Palettes.All.forEach { palette ->
-                        androidx.compose.material3.DropdownMenuItem(
+                        DropdownMenuItem(
                             text = {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -515,7 +515,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                             },
                             onClick = {
                                 PaletteRepository.setPalette(palette)
-                                scope.launch { ServiceLocator.settingsRepository.savePalette(palette) }
+                                scope.launch { settingsRepository.savePalette(palette) }
                                 expandedState.value = false
                             },
                         )
@@ -531,7 +531,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                 Text("Decision timeout:", color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface)
                 Button(onClick = {
                     val newVal = (timeoutSecState.value - 1).coerceIn(1, 10)
-                    scope.launch { ServiceLocator.settingsRepository.saveDecisionTimeoutSeconds(newVal) }
+                    scope.launch { settingsRepository.saveDecisionTimeoutSeconds(newVal) }
                 }) { Text("-") }
                 Text(
                     "${timeoutSecState.value}s",
@@ -539,7 +539,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                 )
                 Button(onClick = {
                     val newVal = (timeoutSecState.value + 1).coerceIn(1, 10)
-                    scope.launch { ServiceLocator.settingsRepository.saveDecisionTimeoutSeconds(newVal) }
+                    scope.launch { settingsRepository.saveDecisionTimeoutSeconds(newVal) }
                 }) { Text("+") }
             }
         }
