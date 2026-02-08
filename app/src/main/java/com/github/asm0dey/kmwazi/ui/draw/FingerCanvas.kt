@@ -74,7 +74,7 @@ fun FingerCanvas(
             if (count < 10) {
                 val color = when {
                     currentGroupsMap != null -> paletteColors[currentGroupsMap[id]!! % paletteSize]
-                    winnerId != null && id == winnerId -> fingerColors[id] ?: paletteColors[0]
+                    winnerId != null && id == winnerId -> fingerColors[id] ?: paletteColors[id.toInt() % paletteSize]
                     winnerId != null -> Color.DarkGray
                     currentOrderMap != null -> fingerColors[id] ?: paletteColors[id.toInt() % paletteSize]
                     else -> fingerColors[id] ?: paletteColors[id.toInt() % paletteSize]

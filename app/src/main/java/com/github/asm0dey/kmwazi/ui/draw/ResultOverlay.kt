@@ -55,7 +55,7 @@ fun ResultOverlay(
                 val center = winnerPos ?: Offset(this.size.width / 2f, this.size.height / 2f)
                 val maxRadius = hypot(this.size.width.toDouble(), this.size.height.toDouble()).toFloat()
                 val r = maxRadius * progress.value
-                val color = fingerColors[winnerIdOverlay] ?: palette.colors.firstOrNull() ?: Color(0xFF4CAF50)
+                val color = fingerColors[winnerIdOverlay] ?: palette.colors[(winnerIdOverlay ?: 0L).toInt() % palette.colors.size]
                 drawCircle(color = color.copy(alpha = 0.5f), radius = r, center = center)
             }
             is Result.Order -> {
@@ -63,7 +63,7 @@ fun ResultOverlay(
                 val center = firstId?.let { fid -> snapshot?.get(fid) } ?: Offset(this.size.width / 2f, this.size.height / 2f)
                 val maxRadius = hypot(this.size.width.toDouble(), this.size.height.toDouble()).toFloat()
                 val r = maxRadius * progress.value
-                val color = firstId?.let { fid -> fingerColors[fid] } ?: palette.colors.firstOrNull() ?: Color(0xFF2196F3)
+                val color = firstId?.let { fid -> fingerColors[fid] ?: palette.colors[fid.toInt() % palette.colors.size] } ?: palette.colors.firstOrNull() ?: Color(0xFF2196F3)
                 drawCircle(color = color.copy(alpha = 0.5f), radius = r, center = center)
             }
             is Result.Groups -> {
