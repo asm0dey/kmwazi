@@ -22,7 +22,7 @@ agp = "9.0.0"
 
 kotlin = "2.3.10"
 
-coreKtx = "1.17.0"
+coreKtx = "1.19.0"
 ##   ⬆ = "1.18.0-alpha01"
 
 junit = "4.13.2"
