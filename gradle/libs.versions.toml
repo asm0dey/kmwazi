@@ -31,7 +31,7 @@ espressoCore = "3.7.0"
 appcompat = "1.7.1"
 ktlint = "14.0.1"
 
-androidx-compose = "2026.01.01"
+androidx-compose = "2026.06.01"
 
 google-android-material = "1.13.0"
 ##                   ⬆ = "1.14.0-alpha01"
