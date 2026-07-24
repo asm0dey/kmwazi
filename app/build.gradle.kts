@@ -12,7 +12,7 @@ plugins {
 
 android {
     namespace = "com.github.asm0dey.kmwazi"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.github.asm0dey.kmwazi"
