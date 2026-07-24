@@ -45,7 +45,7 @@ jobs:
           cache: 'gradle'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
       - name: List buildtools
         run: ls /usr/local/lib/android/sdk/build-tools/
 
