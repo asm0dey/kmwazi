@@ -24,18 +24,6 @@ package com.github.asm0dey.kmwazi.ui
 
 import androidx.compose.ui.graphics.Color
 import com.github.asm0dey.kmwazi.R
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-
-// Simple in-memory palette store for the current session
-object PaletteRepository {
-    private val _current = MutableStateFlow(Palettes.Vibrant)
-    val current: StateFlow<Palette> get() = _current
-
-    fun setPalette(palette: Palette) {
-        _current.value = palette
-    }
-}
 
 // Palette model and predefined palettes
 data class Palette(val id: String, val nameRes: Int, val colors: List<Color>)

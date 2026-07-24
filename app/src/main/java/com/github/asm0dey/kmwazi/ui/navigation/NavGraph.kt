@@ -23,16 +23,11 @@
 package com.github.asm0dey.kmwazi.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.github.asm0dey.kmwazi.di.ServiceLocator
-import com.github.asm0dey.kmwazi.ui.PaletteRepository
 import com.github.asm0dey.kmwazi.ui.screens.HelpScreen
 import com.github.asm0dey.kmwazi.ui.screens.HomeScreen
 import com.github.asm0dey.kmwazi.ui.screens.SettingsScreen
@@ -50,14 +45,6 @@ fun KmwaziNavHost(
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController(),
 ) {
-    val settingsRepository = ServiceLocator.settingsRepository
-    val palette by settingsRepository.paletteFlow().collectAsState(initial = com.github.asm0dey.kmwazi.ui.Palettes.Vibrant)
-
-    // Apply saved palette as early as possible
-    LaunchedEffect(palette) {
-        PaletteRepository.setPalette(palette)
-    }
-
     NavHost(navController = navController, startDestination = Screen.Home.route, modifier = modifier) {
         composable(Screen.Home.route) { HomeScreen(onNavigate = { navController.navigate(it) }) }
         composable(Screen.Touch.route) {

@@ -78,7 +78,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.github.asm0dey.kmwazi.di.ServiceLocator.settingsRepository
 import com.github.asm0dey.kmwazi.domain.Mode
-import com.github.asm0dey.kmwazi.ui.PaletteRepository
+import com.github.asm0dey.kmwazi.ui.Palettes
 import com.github.asm0dey.kmwazi.ui.draw.FingerCanvas
 import com.github.asm0dey.kmwazi.ui.draw.ResultOverlay
 import com.github.asm0dey.kmwazi.ui.gestures.TouchEventListener
@@ -91,7 +91,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TouchScreen(onBack: () -> Unit) {
-    val palette = PaletteRepository.current.collectAsState().value
+    val palette by settingsRepository.paletteFlow().collectAsState(initial = Palettes.Vibrant)
     val vm: TouchViewModel = viewModel()
     val inputLocked = vm.inputLocked.collectAsState().value
     val snapshot = vm.snapshot.collectAsState().value

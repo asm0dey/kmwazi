@@ -42,6 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,13 +58,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.github.asm0dey.kmwazi.R
 import com.github.asm0dey.kmwazi.di.ServiceLocator.settingsRepository
-import com.github.asm0dey.kmwazi.ui.PaletteRepository
 import com.github.asm0dey.kmwazi.ui.Palettes
 import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(onBack: () -> Unit) {
-    val current = PaletteRepository.current.collectAsState().value
+    val current by settingsRepository.paletteFlow().collectAsState(initial = Palettes.Vibrant)
     val expandedState = remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val timeoutSecState =
@@ -120,7 +120,6 @@ fun SettingsScreen(onBack: () -> Unit) {
                                 }
                             },
                             onClick = {
-                                PaletteRepository.setPalette(palette)
                                 scope.launch { settingsRepository.savePalette(palette) }
                                 expandedState.value = false
                             },
