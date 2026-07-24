@@ -38,10 +38,9 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore by preferencesDataStore(name = "settings")
 
 /**
- * DataStore-based implementation of SettingsRepositoryInterface.
- * Stores user preferences for palette, mode, and timeout settings.
+ * DataStore-based settings store for palette, mode, and timeout preferences.
  */
-class DataStoreSettingsRepository(private val dataStore: DataStore<Preferences>) : SettingsRepositoryInterface {
+class SettingsRepository(private val dataStore: DataStore<Preferences>) {
     constructor(context: Context) : this(context.dataStore)
 
     private val KEY_MODE = stringPreferencesKey("mode")
@@ -49,7 +48,7 @@ class DataStoreSettingsRepository(private val dataStore: DataStore<Preferences>)
     private val KEY_PALETTE = stringPreferencesKey("palette_name")
     private val KEY_DECISION_TIMEOUT_SEC = intPreferencesKey("decision_timeout_sec")
 
-    override fun paletteFlow(): Flow<Palette> =
+    fun paletteFlow(): Flow<Palette> =
         dataStore.data.map { prefs ->
             when (prefs[KEY_PALETTE]) {
                 Palettes.Pastel.id -> Palettes.Pastel
@@ -60,7 +59,7 @@ class DataStoreSettingsRepository(private val dataStore: DataStore<Preferences>)
             }
         }
 
-    override fun modeFlow(): Flow<Mode> =
+    fun modeFlow(): Flow<Mode> =
         dataStore.data.map { prefs ->
             when (prefs[KEY_MODE]) {
                 Mode.ChooseOne.toString() -> Mode.ChooseOne
@@ -73,18 +72,18 @@ class DataStoreSettingsRepository(private val dataStore: DataStore<Preferences>)
             }
         }
 
-    override fun decisionTimeoutSecondsFlow(): Flow<Int> =
+    fun decisionTimeoutSecondsFlow(): Flow<Int> =
         dataStore.data.map { prefs ->
             (prefs[KEY_DECISION_TIMEOUT_SEC] ?: 3).coerceIn(1, 10)
         }
 
-    override suspend fun savePalette(palette: Palette) {
+    suspend fun savePalette(palette: Palette) {
         dataStore.edit { prefs ->
             prefs[KEY_PALETTE] = palette.id
         }
     }
 
-    override suspend fun saveMode(mode: Mode) {
+    suspend fun saveMode(mode: Mode) {
         dataStore.edit { prefs ->
             when (mode) {
                 is Mode.ChooseOne -> {
@@ -101,7 +100,7 @@ class DataStoreSettingsRepository(private val dataStore: DataStore<Preferences>)
         }
     }
 
-    override suspend fun saveDecisionTimeoutSeconds(seconds: Int) {
+    suspend fun saveDecisionTimeoutSeconds(seconds: Int) {
         val clamped = seconds.coerceIn(1, 10)
         dataStore.edit { prefs ->
             prefs[KEY_DECISION_TIMEOUT_SEC] = clamped

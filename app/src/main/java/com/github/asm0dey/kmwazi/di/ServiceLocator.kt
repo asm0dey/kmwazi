@@ -23,8 +23,7 @@
 package com.github.asm0dey.kmwazi.di
 
 import android.content.Context
-import com.github.asm0dey.kmwazi.data.DataStoreSettingsRepository
-import com.github.asm0dey.kmwazi.data.SettingsRepositoryInterface
+import com.github.asm0dey.kmwazi.data.SettingsRepository
 import com.github.asm0dey.kmwazi.domain.RandomProvider
 import com.github.asm0dey.kmwazi.domain.ResultEngine
 import com.github.asm0dey.kmwazi.domain.SecureRandomProvider
@@ -37,7 +36,7 @@ import com.github.asm0dey.kmwazi.domain.SecureRandomProvider
  * before accessing any dependencies.
  */
 object ServiceLocator {
-    private var _settingsRepository: SettingsRepositoryInterface? = null
+    private var _settingsRepository: SettingsRepository? = null
     private var _randomProvider: RandomProvider? = null
     private var _resultEngine: ResultEngine? = null
 
@@ -48,14 +47,14 @@ object ServiceLocator {
     fun initialize(context: Context) {
         _randomProvider = SecureRandomProvider()
         _resultEngine = ResultEngine(_randomProvider!!)
-        _settingsRepository = DataStoreSettingsRepository(context.applicationContext)
+        _settingsRepository = SettingsRepository(context.applicationContext)
     }
 
     /**
      * Returns the SettingsRepository instance.
      * @throws IllegalStateException if ServiceLocator hasn't been initialized
      */
-    val settingsRepository: SettingsRepositoryInterface
+    val settingsRepository: SettingsRepository
         get() = _settingsRepository ?: error("ServiceLocator not initialized. Call initialize() first.")
 
     /**
