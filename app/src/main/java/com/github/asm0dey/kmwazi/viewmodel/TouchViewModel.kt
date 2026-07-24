@@ -133,7 +133,5 @@ class TouchViewModel(
 
     companion object {
         private const val TICK_MS = 100L
-
-        // Long-press duration to reset when result is shown
     }
 }

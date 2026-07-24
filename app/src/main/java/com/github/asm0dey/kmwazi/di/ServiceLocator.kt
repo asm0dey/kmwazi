@@ -24,7 +24,6 @@ package com.github.asm0dey.kmwazi.di
 
 import android.content.Context
 import com.github.asm0dey.kmwazi.data.SettingsRepository
-import com.github.asm0dey.kmwazi.domain.RandomProvider
 import com.github.asm0dey.kmwazi.domain.ResultEngine
 import com.github.asm0dey.kmwazi.domain.SecureRandomProvider
 
@@ -37,7 +36,6 @@ import com.github.asm0dey.kmwazi.domain.SecureRandomProvider
  */
 object ServiceLocator {
     private var _settingsRepository: SettingsRepository? = null
-    private var _randomProvider: RandomProvider? = null
     private var _resultEngine: ResultEngine? = null
 
     /**
@@ -45,8 +43,8 @@ object ServiceLocator {
      * Should be called once at application startup.
      */
     fun initialize(context: Context) {
-        _randomProvider = SecureRandomProvider()
-        _resultEngine = ResultEngine(_randomProvider!!)
+        val randomProvider = SecureRandomProvider()
+        _resultEngine = ResultEngine(randomProvider)
         _settingsRepository = SettingsRepository(context.applicationContext)
     }
 
