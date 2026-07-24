@@ -33,7 +33,7 @@ ktlint = "14.2.0"
 
 androidx-compose = "2026.06.01"
 
-google-android-material = "1.13.0"
+google-android-material = "1.14.0"
 ##                   ⬆ = "1.14.0-alpha01"
 ##                   ⬆ = "1.14.0-alpha02"
 ##                   ⬆ = "1.14.0-alpha03"
