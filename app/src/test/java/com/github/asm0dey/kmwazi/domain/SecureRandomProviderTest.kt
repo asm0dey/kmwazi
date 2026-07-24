@@ -22,17 +22,27 @@
 
 package com.github.asm0dey.kmwazi.domain
 
-import java.security.SecureRandom
-import java.util.Collections
+import org.junit.Assert.assertEquals
+import org.junit.Test
 
-/**
- * Production implementation of RandomProvider using SecureRandom for cryptographically secure randomness.
- */
-class SecureRandomProvider : RandomProvider {
-    private val rng = SecureRandom()
+class SecureRandomProviderTest {
+    @Test
+    fun `shuffle returns a permutation of the input`() {
+        val provider = SecureRandomProvider()
+        val input = (1L..100L).toList()
 
-    override fun nextInt(bound: Int): Int = rng.nextInt(bound)
+        val result = provider.shuffle(input)
 
-    override fun <T> shuffle(list: List<T>): List<T> =
-        list.toMutableList().also { Collections.shuffle(it, rng) }
+        assertEquals("shuffle must preserve every element", input.toSet(), result.toSet())
+        assertEquals("shuffle must not change size", input.size, result.size)
+    }
+
+    @Test
+    fun `nextInt stays within bound`() {
+        val provider = SecureRandomProvider()
+        repeat(1000) {
+            val n = provider.nextInt(10)
+            assert(n in 0 until 10) { "nextInt(10) returned $n" }
+        }
+    }
 }
