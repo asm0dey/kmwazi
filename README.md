@@ -32,15 +32,18 @@ Kmwazi is a multi-touch randomizer app for Android, inspired by Chwazi. It helps
   - Change the color palette.
   - Adjust the decision timeout (the time fingers must remain still before a selection is made).
 
-## Installation
+## Project layout
 
-This is an Android application. You can build it from source using Android Studio and Gradle.
-
-```bash
-./gradlew assembleDebug
-```
+- `shared/` — all app code (Compose Multiplatform): `round/` (pure game rules), `Settings`, `RoundViewModel`, `ui/`.
+- `app/` — Android entry point (the published app).
+- `desktopApp/` — desktop window for development; not released.
 
 ## Development
+
+- Run on desktop: `./gradlew :desktopApp:run`
+- Build Android: `./gradlew :app:assembleDebug`
+- All checks: `./gradlew check` (or `bundle exec fastlane test`)
+- Releasing: see `RELEASING.md`.
 
 ### Fastlane
 

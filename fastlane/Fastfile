@@ -1,9 +1,11 @@
 default_platform(:android)
 
 platform :android do
-  desc "Runs all the tests"
+  desc "Runs all checks: ktlint, license headers, lint, tests, architecture rules"
   lane :test do
-    gradle(task: "test")
+    gradle(task: "check")
+    # applyLicenseHeader runs as part of check; any file it had to touch fails CI here.
+    sh("git diff --exit-code")
   end
 
   desc "Submit a new Beta Build to Play Store Internal Track"

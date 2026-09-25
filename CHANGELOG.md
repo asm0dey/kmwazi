@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.0
+
+- Rewritten from scratch on Compose Multiplatform; same features and settings.
+- Circles are sized in dp, so they look the same on every screen density.
+- Every finger is drawn (previously only the first 10).
+- Groups show group numbers; Order and Groups labels pick black or white for readable contrast.
+- The result overlay fades out faster.
+- Group size is 2–10 everywhere.
+
 ## [Unreleased]
 
 ### Added - Phase 2 & 3: UI Separation, Theming, and Accessibility
