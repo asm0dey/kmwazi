@@ -1,0 +1,172 @@
+/*
+ * kmwazi
+ *
+ * Copyright (C) 2025 asm0dey <pavel.finkelshtein+kmwazi@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ *
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ *
+ */
+
+package com.github.asm0dey.kmwazi.ui
+
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.v2.runComposeUiTest
+import com.github.asm0dey.kmwazi.Palettes
+import com.github.asm0dey.kmwazi.round.Deal
+import com.github.asm0dey.kmwazi.round.Event
+import com.github.asm0dey.kmwazi.round.Mode
+import com.github.asm0dey.kmwazi.round.Result
+import com.github.asm0dey.kmwazi.round.RoundState
+import com.github.asm0dey.kmwazi.round.reduce
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.maps.shouldContainKey
+import io.kotest.matchers.maps.shouldHaveSize
+import io.kotest.matchers.shouldBe
+import kotlin.random.Random
+
+private val deal = Deal(Random(0))
+
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.showTouch(initial: RoundState = RoundState(Mode.ChooseOne)): MutableState<RoundState> {
+    val state = mutableStateOf(initial)
+
+    fun on(e: Event) {
+        state.value = reduce(state.value, e, deal)
+    }
+    mainClock.autoAdvance = false
+    setContent {
+        TouchScreen(
+            state = state.value,
+            palette = Palettes.Vibrant,
+            groupSize = 2,
+            onFingers = { on(Event.FingersChanged(it)) },
+            onMode = { on(Event.ModeChanged(it)) },
+            onReset = { on(Event.Reset) },
+            onClose = {},
+        )
+    }
+    mainClock.advanceTimeByFrame()
+    return state
+}
+
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.pixel(at: Offset): Color {
+    mainClock.advanceTimeByFrame()
+    return onRoot().captureToImage().toPixelMap()[at.x.toInt(), at.y.toInt()]
+}
+
+@OptIn(ExperimentalTestApi::class)
+class TouchScreenTest :
+    FunSpec({
+        val spots = List(12) { Offset(60f + it * 80f, 300f) }
+
+        test("each finger gets a circle in the next palette colour") {
+            runComposeUiTest {
+                showTouch()
+                onRoot().performTouchInput { spots.take(3).forEachIndexed { i, p -> down(i, p) } }
+                spots.take(3).forEachIndexed { i, p -> pixel(p) shouldBe Palettes.Vibrant.color(i) }
+            }
+        }
+
+        test("more fingers than colours are all drawn and colours wrap") {
+            runComposeUiTest {
+                val state = showTouch()
+                onRoot().performTouchInput { spots.forEachIndexed { i, p -> down(i, p) } }
+                state.value.fingers.size shouldBe 12
+                pixel(spots[10]) shouldBe Palettes.Vibrant.color(0)
+                pixel(spots[11]) shouldBe Palettes.Vibrant.color(1)
+            }
+        }
+
+        test("a tap on the mode button is not a finger") {
+            runComposeUiTest {
+                val state = showTouch()
+                onNodeWithText("Mode: Choose One").performClick()
+                mainClock.advanceTimeByFrame()
+                state.value.fingers shouldBe emptyMap()
+                state.value.armed shouldBe 0
+            }
+        }
+
+        test("fingers are gray in groups mode until the result") {
+            runComposeUiTest {
+                showTouch(RoundState(Mode.Groups(2)))
+                onRoot().performTouchInput { down(0, spots[0]) }
+                pixel(spots[0]) shouldBe Color.Gray
+            }
+        }
+
+        test("choose one keeps the winner's colour and grays out the rest") {
+            runComposeUiTest {
+                val state = showTouch()
+                onRoot().performTouchInput { spots.take(3).forEachIndexed { i, p -> down(i, p) } }
+                mainClock.advanceTimeByFrame()
+                state.value = reduce(state.value, Event.Expired(state.value.armed), deal)
+                mainClock.advanceTimeBy(1_200) // overlay: 800 ms grow + 300 ms fade
+                val winner = (state.value.outcome!!.result as Result.One).winner
+                state.value.outcome!!.snapshot.forEach { (id, finger) ->
+                    val expected = if (id == winner) Palettes.Vibrant.color(finger.colorIndex) else Color.DarkGray
+                    pixel(Offset(finger.pos.x, finger.pos.y)) shouldBe expected
+                }
+            }
+        }
+
+        test("adding a finger re-arms the countdown") {
+            runComposeUiTest {
+                val state = showTouch()
+                onRoot().performTouchInput { down(0, spots[0]) }
+                mainClock.advanceTimeByFrame()
+                val armedAfterFirst = state.value.armed
+                onRoot().performTouchInput { down(1, spots[1]) }
+                mainClock.advanceTimeByFrame()
+                state.value.armed shouldBe armedAfterFirst + 1
+            }
+        }
+
+        test("lifting all fingers then touching again starts a new round") {
+            runComposeUiTest {
+                val state = showTouch()
+                onRoot().performTouchInput {
+                    down(0, spots[0])
+                    down(1, spots[1])
+                }
+                mainClock.advanceTimeByFrame()
+                state.value = reduce(state.value, Event.Expired(state.value.armed), deal)
+                mainClock.advanceTimeBy(1_200)
+                onRoot().performTouchInput {
+                    up(0)
+                    up(1)
+                }
+                mainClock.advanceTimeByFrame()
+                onRoot().performTouchInput { down(2, spots[2]) }
+                mainClock.advanceTimeByFrame()
+                state.value.outcome shouldBe null
+                state.value.fingers shouldHaveSize 1
+                state.value.fingers shouldContainKey 2L
+            }
+        }
+    })
