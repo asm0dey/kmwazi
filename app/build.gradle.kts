@@ -10,6 +10,10 @@ plugins {
     alias(libs.plugins.license)
 }
 
+// Release signing comes only from the environment (CI decodes the keystore on tag builds);
+// without KMWAZI_KEYSTORE the release build stays unsigned, as local and PR builds do.
+val releaseKeystore = providers.environmentVariable("KMWAZI_KEYSTORE").orNull
+
 android {
     namespace = "com.github.asm0dey.kmwazi"
     compileSdk = 37
@@ -22,8 +26,20 @@ android {
         versionName = "2.0.0"
     }
 
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = providers.environmentVariable("KMWAZI_KEYSTORE_PASSWORD").get()
+                keyAlias = providers.environmentVariable("KMWAZI_KEY_ALIAS").get()
+                keyPassword = providers.environmentVariable("KMWAZI_KEY_PASSWORD").get()
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

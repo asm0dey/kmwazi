@@ -26,6 +26,12 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    # Read by app/build.gradle.kts; signing only happens once "Decode keystore" sets KMWAZI_KEYSTORE.
+    env:
+      KMWAZI_KEYSTORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+      KMWAZI_KEY_ALIAS: ${{ secrets.ALIAS }}
+      KMWAZI_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
     steps:
       - uses: actions/checkout@v6
 
@@ -40,8 +46,9 @@ jobs:
       - name: Set Up JDK
         uses: actions/setup-java@v5
         with:
+          # Matches gradle/gradle-daemon-jvm.properties, so Gradle doesn't download a second JDK.
           distribution: 'liberica'
-          java-version: '17'
+          java-version: '21'
           cache: 'gradle'
 
       - name: Setup Android SDK
@@ -57,6 +64,12 @@ jobs:
 
       - name: bundle install
         run: bundle install
+
+      - name: Decode keystore
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "${{ secrets.SIGNING_KEY }}" | base64 -d > "$RUNNER_TEMP/release.jks"
+          echo "KMWAZI_KEYSTORE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
 
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
@@ -90,49 +103,23 @@ jobs:
           name: ${{ env.date_today }} - ${{ env.repository_name }} - APK(s) debug generated
           path: ${{ env.main_project_module }}/build/outputs/apk/debug/
 
-      # Noted For Output [main_project_module]/build/outputs/apk/release/
-      - name: Sign APK
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: r0adkll/sign-android-release@v1
-        id: sign_app
-        with:
-          releaseDirectory: ${{ env.main_project_module }}/build/outputs/apk/release/
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
-        env:
-          BUILD_TOOLS_VERSION: "36.1.0"
-
       - name: Upload APK Release - ${{ env.repository_name }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.date_today }} - ${{ env.repository_name }} - APK(s) release generated
-          path: ${{ steps.sign_app.outputs.signedReleaseFile || format('{0}/build/outputs/apk/release/', env.main_project_module) }}
-
-      # Noted For Output [main_project_module]/build/outputs/bundle/release/
-      - name: Sign AAB
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: r0adkll/sign-android-release@v1
-        id: sign_aab
-        with:
-          releaseDirectory: ${{ env.main_project_module }}/build/outputs/bundle/release/
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
+          path: ${{ env.main_project_module }}/build/outputs/apk/release/
 
       - name: Upload AAB (App Bundle) Release - ${{ env.repository_name }}
         uses: actions/upload-artifact@v7
         with:
           name: ${{ env.date_today }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
-          path: ${{ steps.sign_aab.outputs.signedReleaseFile || format('{0}/build/outputs/bundle/release/', env.main_project_module) }}
+          path: ${{ env.main_project_module }}/build/outputs/bundle/release/
 
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ${{ steps.sign_app.outputs.signedReleaseFile }}
-            ${{ steps.sign_aab.outputs.signedReleaseFile }}
+            ${{ env.main_project_module }}/build/outputs/apk/release/app-release.apk
+            ${{ env.main_project_module }}/build/outputs/bundle/release/app-release.aab
           generate_release_notes: true
