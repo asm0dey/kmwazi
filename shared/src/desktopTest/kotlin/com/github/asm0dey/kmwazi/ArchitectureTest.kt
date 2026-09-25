@@ -22,8 +22,11 @@
 
 package com.github.asm0dey.kmwazi
 
+import androidx.compose.runtime.internal.StabilityInferred
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf
+import com.tngtech.archunit.core.domain.JavaClass.Predicates.equivalentTo
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage
+import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage
 import com.tngtech.archunit.core.importer.ClassFileImporter
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
@@ -38,22 +41,25 @@ class ArchitectureTest :
                 .importPackages("com.github.asm0dey.kmwazi")
 
         test("round is pure Kotlin: no Android, Compose, coroutines or other app packages") {
-            // androidx.compose.runtime.internal.. is allowed only for @StabilityInferred: the Kotlin
-            // Compose compiler plugin (applied module-wide for stability inference) stamps that
-            // annotation onto every class in :shared, including round's plain data classes that never
-            // reference Compose in source. It is a compiler artifact, not a real dependency.
+            // Only the exact StabilityInferred class is allowed, not the whole
+            // androidx.compose.runtime.internal package: the Kotlin Compose compiler plugin
+            // (applied module-wide for stability inference) stamps @StabilityInferred onto every
+            // class in :shared, including round's plain data classes that never reference Compose
+            // in source. That one class is a compiler artifact, not a real dependency. The rest of
+            // that package (ComposableLambda, AtomicInt, LiveLiteralInfo, ...) is real Compose
+            // runtime machinery and must still be rejected.
             classes()
                 .that()
                 .resideInAPackage("..kmwazi.round..")
                 .should()
-                .onlyDependOnClassesThat()
-                .resideInAnyPackage(
-                    "..kmwazi.round..",
-                    "kotlin..",
-                    "java.lang..",
-                    "java.util..",
-                    "org.jetbrains.annotations..",
-                    "androidx.compose.runtime.internal..",
+                .onlyDependOnClassesThat(
+                    resideInAnyPackage(
+                        "..kmwazi.round..",
+                        "kotlin..",
+                        "java.lang..",
+                        "java.util..",
+                        "org.jetbrains.annotations..",
+                    ).or(equivalentTo(StabilityInferred::class.java)),
                 ).check(production)
         }
 
