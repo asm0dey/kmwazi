@@ -40,6 +40,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.seconds
 
 class RoundViewModel(
     private val settings: Settings,
@@ -59,7 +60,11 @@ class RoundViewModel(
         // Every armed value gets its own countdown; collectLatest cancels the previous one.
         viewModelScope.launch {
             _state.map { it.armed }.distinctUntilChanged().collectLatest { armed ->
-                delay(settings.prefs.first().timeoutSec * 1000L)
+                delay(
+                    settings.prefs
+                        .first()
+                        .timeoutSec.seconds,
+                )
                 send(Event.Expired(armed))
             }
         }
