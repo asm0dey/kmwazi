@@ -22,12 +22,16 @@
 
 package com.github.asm0dey.kmwazi
 
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -72,6 +76,25 @@ class AppTest :
                 onNodeWithContentDescription("Close").performClick()
                 mainClock.advanceTimeBy(100)
                 onNodeWithText("Start").assertExists()
+            }
+        }
+
+        test("on desktop, held keys become fingers after Start") {
+            runComposeUiTest {
+                val settings = Settings(MemoryStore())
+                val vm = RoundViewModel(settings, Random(0))
+                mainClock.autoAdvance = false
+                setContent { App(settings, vm, keyboardFingers = true) }
+                mainClock.advanceTimeBy(100)
+
+                onNodeWithText("Start").performClick()
+                mainClock.advanceTimeBy(100)
+                onRoot().performKeyInput {
+                    keyDown(Key.A)
+                    keyDown(Key.B)
+                }
+                mainClock.advanceTimeBy(100)
+                vm.state.value.fingers.size shouldBe 2
             }
         }
     })
