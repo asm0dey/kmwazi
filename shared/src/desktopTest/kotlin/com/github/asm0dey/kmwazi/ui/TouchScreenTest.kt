@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -37,6 +38,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import com.github.asm0dey.kmwazi.Palettes
 import com.github.asm0dey.kmwazi.labelColor
 import com.github.asm0dey.kmwazi.round.Deal
@@ -321,6 +323,16 @@ class TouchScreenTest :
                 onRoot().performKeyInput { keyDown(Key.A) }
                 mainClock.advanceTimeByFrame()
                 state.value.fingers shouldBe emptyMap()
+            }
+        }
+
+        test("the group size stepper is fully visible in a short window") {
+            runDesktopComposeUiTest(width = 800, height = 480) {
+                showTouch(RoundState(Mode.Groups(2)))
+                onNodeWithText("Mode: Groups (2)").performClick()
+                mainClock.advanceTimeBy(2_000)
+                onNodeWithText("Group size: 2").assertIsDisplayed()
+                onNodeWithText("+").assertIsDisplayed()
             }
         }
     })

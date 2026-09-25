@@ -29,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -49,7 +50,11 @@ fun ModeSheet(
     onMode: (Mode) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    ModalBottomSheet(onDismissRequest = onDismiss) {
+    // Open at full content height: the default half-expanded state cuts off the group-size stepper on short windows.
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
         Column(Modifier.padding(16.dp).padding(bottom = 32.dp)) {
             Text(
                 stringResource(Res.string.touch_selection_mode_title),
