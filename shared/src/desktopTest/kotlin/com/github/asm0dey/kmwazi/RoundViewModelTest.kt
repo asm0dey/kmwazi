@@ -98,4 +98,23 @@ class RoundViewModelTest :
                 settings.prefs.first().mode shouldBe Mode.Groups(4)
             }
         }
+
+        test("a finger sent before the settings restore completes is not discarded") {
+            runTest(main) {
+                val vm = RoundViewModel(Settings(MemoryStore()), Random(0))
+                vm.send(fingers(1))
+                runCurrent()
+                vm.state.value.fingers.keys shouldBe setOf(1L)
+            }
+        }
+
+        test("a mode change sent before the settings restore completes is not reverted") {
+            runTest(main) {
+                val settings = Settings(MemoryStore(preferencesOf(stringPreferencesKey("mode") to "DefineOrder")))
+                val vm = RoundViewModel(settings, Random(0))
+                vm.setMode(Mode.Groups(4))
+                runCurrent()
+                vm.state.value.mode shouldBe Mode.Groups(4)
+            }
+        }
     })

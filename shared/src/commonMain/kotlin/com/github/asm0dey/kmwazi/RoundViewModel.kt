@@ -50,7 +50,12 @@ class RoundViewModel(
     val state: StateFlow<RoundState> = _state.asStateFlow()
 
     init {
-        viewModelScope.launch { send(Event.ModeChanged(settings.prefs.first().mode)) }
+        viewModelScope.launch {
+            val mode = settings.prefs.first().mode
+            // Only apply the persisted mode if no round activity has happened yet (armed == 0);
+            // otherwise this stale read would clobber a finger/mode event the caller already sent.
+            _state.update { if (it.armed == 0) reduce(it, Event.ModeChanged(mode), deal) else it }
+        }
         // Every armed value gets its own countdown; collectLatest cancels the previous one.
         viewModelScope.launch {
             _state.map { it.armed }.distinctUntilChanged().collectLatest { armed ->
