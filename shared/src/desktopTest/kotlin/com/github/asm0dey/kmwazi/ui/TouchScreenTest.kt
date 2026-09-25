@@ -36,6 +36,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.github.asm0dey.kmwazi.Palettes
+import com.github.asm0dey.kmwazi.labelColor
 import com.github.asm0dey.kmwazi.round.Deal
 import com.github.asm0dey.kmwazi.round.Event
 import com.github.asm0dey.kmwazi.round.Mode
@@ -77,6 +78,28 @@ private fun ComposeUiTest.showTouch(initial: RoundState = RoundState(Mode.Choose
 private fun ComposeUiTest.pixel(at: Offset): Color {
     mainClock.advanceTimeByFrame()
     return onRoot().captureToImage().toPixelMap()[at.x.toInt(), at.y.toInt()]
+}
+
+// Labels are antialiased text, so they don't land on the exact finger centre pixel.
+// Scan a small square around it and require at least one exact match on the glyph core.
+@OptIn(ExperimentalTestApi::class)
+private fun ComposeUiTest.hasPixelNear(
+    at: Offset,
+    expected: Color,
+    radius: Int = 12,
+): Boolean {
+    mainClock.advanceTimeByFrame()
+    val map = onRoot().captureToImage().toPixelMap()
+    val cx = at.x.toInt()
+    val cy = at.y.toInt()
+    for (dx in -radius..radius) {
+        for (dy in -radius..radius) {
+            val x = cx + dx
+            val y = cy + dy
+            if (x in 0 until map.width && y in 0 until map.height && map[x, y] == expected) return true
+        }
+    }
+    return false
 }
 
 @OptIn(ExperimentalTestApi::class)
@@ -149,6 +172,40 @@ class TouchScreenTest :
                 state.value.outcome!!.snapshot.forEach { (id, finger) ->
                     val expected = if (id == winner) Palettes.Vibrant.color(finger.colorIndex) else Color.DarkGray
                     pixel(Offset(finger.pos.x, finger.pos.y)) shouldBe expected
+                }
+            }
+        }
+
+        test("order result shows a readable position label on every finger") {
+            runComposeUiTest {
+                val state = showTouch(RoundState(Mode.Order))
+                onRoot().performTouchInput { spots.take(3).forEachIndexed { i, p -> down(i, p) } }
+                mainClock.advanceTimeByFrame()
+                state.value = reduce(state.value, Event.Expired(state.value.armed), deal)
+                mainClock.advanceTimeBy(1_200) // overlay: 800 ms grow + 300 ms fade
+                val fingers = state.value.outcome!!.snapshot
+                fingers.forEach { (_, finger) ->
+                    val circleColour = Palettes.Vibrant.color(finger.colorIndex)
+                    hasPixelNear(Offset(finger.pos.x, finger.pos.y), labelColor(circleColour)) shouldBe true
+                }
+            }
+        }
+
+        test("groups result shows a readable group-number label on every finger") {
+            runComposeUiTest {
+                val state = showTouch(RoundState(Mode.Groups(2)))
+                onRoot().performTouchInput { spots.take(3).forEachIndexed { i, p -> down(i, p) } }
+                mainClock.advanceTimeByFrame()
+                state.value = reduce(state.value, Event.Expired(state.value.armed), deal)
+                mainClock.advanceTimeBy(1_200) // overlay: 800 ms grow + 300 ms fade
+                val result = state.value.outcome!!.result as Result.Groups
+                val fingers = state.value.outcome!!.snapshot
+                result.groups.forEachIndexed { groupIndex, ids ->
+                    val circleColour = Palettes.Vibrant.color(groupIndex)
+                    ids.forEach { id ->
+                        val finger = fingers.getValue(id)
+                        hasPixelNear(Offset(finger.pos.x, finger.pos.y), labelColor(circleColour)) shouldBe true
+                    }
                 }
             }
         }
