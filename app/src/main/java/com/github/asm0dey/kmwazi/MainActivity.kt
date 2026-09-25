@@ -26,17 +26,21 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
-import com.github.asm0dey.kmwazi.di.ServiceLocator
-import com.github.asm0dey.kmwazi.ui.KmwaziTheme
-import com.github.asm0dey.kmwazi.ui.navigation.KmwaziNavHost
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import java.security.SecureRandom
+import kotlin.random.asKotlinRandom
 
 class MainActivity : ComponentActivity() {
+    private val settings get() = (application as KmwaziApplication).settings
+    private val vm: RoundViewModel by viewModels {
+        viewModelFactory { initializer { RoundViewModel(settings, SecureRandom().asKotlinRandom()) } }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -44,18 +48,6 @@ class MainActivity : ComponentActivity() {
             systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             hide(WindowInsetsCompat.Type.statusBars())
         }
-        ServiceLocator.initialize(applicationContext)
-        setContent {
-            KmwaziApp()
-        }
-    }
-}
-
-@Composable
-fun KmwaziApp() {
-    KmwaziTheme(useDarkTheme = true) {
-        Surface {
-            KmwaziNavHost(modifier = Modifier)
-        }
+        setContent { App(settings, vm) }
     }
 }

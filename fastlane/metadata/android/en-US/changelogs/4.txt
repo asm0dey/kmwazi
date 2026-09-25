@@ -1,0 +1,4 @@
+Rewritten from scratch on Compose Multiplatform — same features and settings.
+Circles stay the same size on every screen, and every finger is drawn.
+Groups and Order now show clear, readable numbers on each circle.
+Results appear faster, with a quicker fade-out.

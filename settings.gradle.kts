@@ -12,9 +12,9 @@ pluginManagement {
     }
 }
 plugins {
-    // See https://splitties.github.io/refreshVersions
-    id("de.fayard.refreshVersions") version "0.60.6"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -24,5 +24,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "kmwazi"
-include(":app")
-
+include(":app", ":shared", ":desktopApp")
