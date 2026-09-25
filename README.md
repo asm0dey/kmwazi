@@ -7,7 +7,7 @@ Kmwazi is a multi-touch randomizer app for Android, inspired by Chwazi. It helps
 ## Features
 
 - Choose One: Randomly selects a single person from the group.
-- Split into Groups: Divides participants into groups of a specified size.
+- Split into Groups: Divides participants into groups of a specified size (2–10); the last group gets whoever is left over.
 - Define Order: Assigns a random sequence to all participants.
 - Customizable stabilization timeout (1 to 10 seconds).
 - Multiple color palettes for visual variety.
@@ -17,15 +17,15 @@ Kmwazi is a multi-touch randomizer app for Android, inspired by Chwazi. It helps
 
 ### Getting Started
 1. Launch the app and tap "Start" on the home screen.
-2. Select your desired mode at the top of the screen: "Choose One", "Groups", or "Order".
-   - For "Groups" mode, use the plus and minus buttons to set the number of people per group.
+2. Tap the mode button in the top-left corner and pick "Choose One", "Order", or "Groups".
+   - For "Groups" mode, use the plus and minus buttons in the same sheet to set the number of people per group (for example, 4 people in groups of 3 make one group of 3 and one of 1).
 
 ### Making a Selection
 1. Have everyone place one finger on the screen.
-2. Hold your fingers still. The app will start a countdown as soon as the touches stabilize.
+2. Keep your fingers on the screen. The countdown starts as soon as the set of fingers stops changing.
 3. If anyone adds or removes a finger, the countdown will reset.
-4. Once the countdown finishes, the result will be displayed with animations and colors.
-5. To start a new round, everyone should lift their fingers.
+4. Once the countdown finishes, the result is shown: the chosen finger keeps its colour, groups get a shared colour and a group number, and the order is shown as numbers.
+5. To start a new round, everyone lifts their fingers and touches again, or tap "Reset".
 
 ### Settings
 - Access the Settings from the home screen to:
@@ -40,10 +40,11 @@ Kmwazi is a multi-touch randomizer app for Android, inspired by Chwazi. It helps
 
 ## Development
 
-- Run on desktop: `./gradlew :desktopApp:run`
+- Run on desktop: `./gradlew :desktopApp:run` — hold keyboard keys to add fingers at random spots (the mouse is one more finger); Esc goes back.
 - Build Android: `./gradlew :app:assembleDebug`
 - All checks: `./gradlew check` (or `bundle exec fastlane test`)
 - Releasing: see `RELEASING.md`.
+- App icon: edit the SVG masters in `art/icon/`, then run `art/icon/render.sh` to regenerate every raster.
 
 ### Fastlane
 
