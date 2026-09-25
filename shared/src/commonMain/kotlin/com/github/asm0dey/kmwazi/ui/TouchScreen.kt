@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -81,6 +82,10 @@ fun TouchScreen(
     val latestOnFingers by rememberUpdatedState(onFingers)
     val pressed = remember { mutableSetOf<Long>() }
     var sheetOpen by remember { mutableStateOf(false) }
+
+    // The VM survives activity recreation (e.g. rotation) but the in-progress gesture does not:
+    // clear fingers so a rotation never leaves a stale, un-liftable finger armed for a result.
+    DisposableEffect(Unit) { onDispose { latestOnFingers(emptyMap()) } }
 
     val pulse by rememberInfiniteTransition(label = "pulse").animateFloat(
         initialValue = 1f,

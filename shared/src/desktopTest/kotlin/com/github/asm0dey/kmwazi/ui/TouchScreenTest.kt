@@ -210,6 +210,39 @@ class TouchScreenTest :
             }
         }
 
+        test("leaving composition with fingers down clears them (rotation safety net)") {
+            runComposeUiTest {
+                val state = mutableStateOf(RoundState(Mode.ChooseOne))
+                val visible = mutableStateOf(true)
+
+                fun on(e: Event) {
+                    state.value = reduce(state.value, e, deal)
+                }
+                mainClock.autoAdvance = false
+                setContent {
+                    if (visible.value) {
+                        TouchScreen(
+                            state = state.value,
+                            palette = Palettes.Vibrant,
+                            groupSize = 2,
+                            onFingers = { on(Event.FingersChanged(it)) },
+                            onMode = { on(Event.ModeChanged(it)) },
+                            onReset = { on(Event.Reset) },
+                            onClose = {},
+                        )
+                    }
+                }
+                mainClock.advanceTimeByFrame()
+                onRoot().performTouchInput { down(0, spots[0]) }
+                mainClock.advanceTimeByFrame()
+                state.value.fingers shouldHaveSize 1
+
+                visible.value = false
+                mainClock.advanceTimeByFrame()
+                state.value.fingers shouldBe emptyMap()
+            }
+        }
+
         test("adding a finger re-arms the countdown") {
             runComposeUiTest {
                 val state = showTouch()
