@@ -57,7 +57,7 @@ To get started:
    ```
 
 Available lanes:
-- `bundle exec fastlane test`: Runs all unit tests.
+- `bundle exec fastlane test`: Runs all checks (ktlint, license headers, Android lint, tests, architecture rules) and fails if the tree is dirty.
 - `bundle exec fastlane beta`: Builds the release APK and uploads it to the Play Store Internal track.
 - `bundle exec fastlane deploy`: Builds the release App Bundle and uploads it to the Play Store Production track.
 

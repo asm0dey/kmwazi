@@ -1,0 +1,4 @@
+Von Grund auf neu geschrieben mit Compose Multiplatform — gleiche Funktionen und Einstellungen wie zuvor.
+Die Kreise sind auf jedem Bildschirm gleich groß, und jeder Finger wird angezeigt.
+Gruppen und Reihenfolge zeigen jetzt gut lesbare Nummern auf jedem Kreis.
+Das Ergebnis erscheint schneller und blendet zügiger aus.
