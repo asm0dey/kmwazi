@@ -30,7 +30,7 @@ Kmwazi is a multi-touch randomizer app for Android, inspired by Chwazi. It helps
 ### Settings
 - Access the Settings from the home screen to:
   - Change the color palette.
-  - Adjust the decision timeout (the time fingers must remain still before a selection is made).
+  - Adjust the decision timeout (how long the same set of fingers must stay down before a selection is made).
 
 ## Project layout
 
