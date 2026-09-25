@@ -31,7 +31,7 @@ kotlin {
             implementation(libs.compose.components.resources)
             implementation(libs.okio)
         }
-        val desktopTest by getting {
+        named("desktopTest") {
             dependencies {
                 implementation(libs.kotest.runner.junit5)
                 implementation(libs.kotest.assertions.core)
