@@ -11,10 +11,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-plugins {
-    // See https://splitties.github.io/refreshVersions
-    id("de.fayard.refreshVersions") version "0.60.6"
-}
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -24,5 +21,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "kmwazi"
-include(":app")
-
+include(":app", ":shared")
