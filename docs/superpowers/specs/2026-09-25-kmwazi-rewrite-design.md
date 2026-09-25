@@ -71,9 +71,10 @@ app/                       com.android.application; MainActivity only
 desktopApp/                main() { application { Window { App(...) } } }
 ```
 
-Wiring: each entry point constructs `SecureRandom().asKotlinRandom()` and a DataStore file path and
-passes them into `App(random, settingsPath)`. `App` creates `Settings` and the ViewModel
-(`viewModel { RoundViewModel(...) }`). No DI container, no expect/actual.
+Wiring: each entry point creates one `Settings(path)` per process (Android: in `KmwaziApplication`, so
+rotation never opens a second DataStore on the same file) and a `RoundViewModel(settings,
+SecureRandom().asKotlinRandom())` (Android: via `viewModels { }` so it survives rotation), then calls
+`App(settings, vm)`. No DI container, no expect/actual.
 
 Removed relative to 1.3.0: `ServiceLocator`/`di`, `TouchEventListener`, `MultiTouchTracker`,
 `CountdownController`, `RandomProvider`/`SecureRandomProvider`/`ResultEngine` (folded into `Deal`),
@@ -176,7 +177,7 @@ Changes:
   - Desktop path: `~/.kmwazi/settings.preferences_pb`.
 - Keys (unchanged): `mode` (string), `group_size` (int), `palette_name` (string), `decision_timeout_sec` (int).
 - Mode values (unchanged): `"ChooseOne"`, `"DefineOrder"`, `"groups"` (+ `group_size`).
-- API: `val prefs: Flow<Prefs>` with `Prefs(palette, mode, timeoutSec)`; `suspend fun setPalette/setMode/setTimeout`.
+- API: `val prefs: Flow<Prefs>` with `Prefs(palette, mode, timeoutSec, groupSize)` (`groupSize` = stored size, used when switching back to Groups); `suspend fun setPalette/setMode/setTimeout`.
 - Reads are tolerant:
 
   | Stored | Read as |
@@ -222,10 +223,11 @@ Manual checks live in `RELEASING.md`: real-finger gestures on a phone
   Compose UI test.
 - Drop: navigation-compose, Turbine, JUnit 4, espresso, androidx-junit, `material` (Views),
   `adaptive`, material icons core/extended.
-- `./gradlew check` runs: ktlint on all modules (`ignoreFailures = false`), license-header check over
-  `shared/src`, `app/src`, `desktopApp/src` using `HEADER`, Android lint on `:app` (accessibility issues
+- `./gradlew check` runs: ktlint on all modules (`ignoreFailures = false`), `applyLicenseHeader` over
+  `shared/src`, `app/src`, `desktopApp/src` using `HEADER` (the plugin has no check-only task; the fastlane
+  `test` lane follows `check` with `git diff --exit-code`, so a missing header fails CI), Android lint on `:app` (accessibility issues
   stay errors), and `desktopTest`.
-- fastlane: `test` lane runs `gradle(task: "check")`; `beta` and `deploy` unchanged (module still `:app`).
+- fastlane: `test` lane runs `gradle(task: "check")` then `git diff --exit-code`; `beta` and `deploy` unchanged (module still `:app`).
 - CI (`.github/workflows/android.yml`): unchanged apart from following the fastlane lane.
 - Renovate (`renovate.json`): `config:recommended` + grouped non-major `packageRule`
   (minor/patch/digest/pin/bump) + `vulnerabilityAlerts`, per the author's cross-project precedent.
