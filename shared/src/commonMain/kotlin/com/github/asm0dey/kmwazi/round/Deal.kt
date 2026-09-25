@@ -20,14 +20,29 @@
  *
  */
 
-package com.github.asm0dey.kmwazi
+package com.github.asm0dey.kmwazi.round
 
-import io.kotest.core.spec.style.FunSpec
-import io.kotest.matchers.shouldBe
+import kotlin.random.Random
 
-class SmokeTest :
-    FunSpec({
-        test("kotest runs on the desktop target") {
-            (1 + 1) shouldBe 2
+class Deal(
+    private val random: Random,
+) {
+    fun chooseOne(ids: List<Long>): Long = ids.random(random)
+
+    fun groups(
+        ids: List<Long>,
+        size: Int,
+    ): List<List<Long>> = ids.shuffled(random).chunked(size)
+
+    fun order(ids: List<Long>): List<Long> = ids.shuffled(random)
+
+    fun deal(
+        mode: Mode,
+        ids: List<Long>,
+    ): Result =
+        when (mode) {
+            Mode.ChooseOne -> Result.One(chooseOne(ids))
+            is Mode.Groups -> Result.Groups(groups(ids, mode.size))
+            Mode.Order -> Result.Order(order(ids))
         }
-    })
+}
