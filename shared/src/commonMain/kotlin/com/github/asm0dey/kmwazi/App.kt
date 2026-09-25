@@ -33,9 +33,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.github.asm0dey.kmwazi.round.Event
 import com.github.asm0dey.kmwazi.ui.HelpScreen
 import com.github.asm0dey.kmwazi.ui.HomeScreen
@@ -45,7 +46,6 @@ import kotlinx.coroutines.launch
 
 enum class Screen { Home, Touch, Settings, Help }
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun App(
     settings: Settings,
@@ -64,7 +64,12 @@ fun App(
     MaterialTheme(colorScheme = darkColorScheme()) {
         Surface(Modifier.fillMaxSize()) {
             // Android back / desktop Esc: everything returns to Home; Home lets the system handle it.
-            BackHandler(enabled = screen != Screen.Home) { go(Screen.Home) }
+            val navState = rememberNavigationEventState(NavigationEventInfo.None)
+            NavigationBackHandler(
+                state = navState,
+                isBackEnabled = screen != Screen.Home,
+                onBackCompleted = { go(Screen.Home) },
+            )
             when (screen) {
                 Screen.Home ->
                     HomeScreen(
