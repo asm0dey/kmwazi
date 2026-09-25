@@ -27,12 +27,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import com.github.asm0dey.kmwazi.Palettes
@@ -52,7 +54,10 @@ import kotlin.random.Random
 private val deal = Deal(Random(0))
 
 @OptIn(ExperimentalTestApi::class)
-private fun ComposeUiTest.showTouch(initial: RoundState = RoundState(Mode.ChooseOne)): MutableState<RoundState> {
+private fun ComposeUiTest.showTouch(
+    initial: RoundState = RoundState(Mode.ChooseOne),
+    keyboardFingers: Boolean = false,
+): MutableState<RoundState> {
     val state = mutableStateOf(initial)
 
     fun on(e: Event) {
@@ -68,6 +73,7 @@ private fun ComposeUiTest.showTouch(initial: RoundState = RoundState(Mode.Choose
             onMode = { on(Event.ModeChanged(it)) },
             onReset = { on(Event.Reset) },
             onClose = {},
+            keyboardFingers = keyboardFingers,
         )
     }
     mainClock.advanceTimeByFrame()
@@ -275,6 +281,46 @@ class TouchScreenTest :
                 state.value.outcome shouldBe null
                 state.value.fingers shouldHaveSize 1
                 state.value.fingers shouldContainKey 2L
+            }
+        }
+        test("held keys become fingers inside the screen and lift on release") {
+            runComposeUiTest {
+                val state = showTouch(keyboardFingers = true)
+                val size = onRoot().fetchSemanticsNode().size
+                onRoot().performKeyInput {
+                    keyDown(Key.A)
+                    keyDown(Key.B)
+                }
+                mainClock.advanceTimeByFrame()
+                state.value.fingers shouldHaveSize 2
+                state.value.fingers.values.forEach {
+                    (it.pos.x in 0f..size.width.toFloat()) shouldBe true
+                    (it.pos.y in 0f..size.height.toFloat()) shouldBe true
+                }
+                onRoot().performKeyInput { keyUp(Key.A) }
+                mainClock.advanceTimeByFrame()
+                state.value.fingers shouldHaveSize 1
+                onRoot().performKeyInput { keyUp(Key.B) }
+                mainClock.advanceTimeByFrame()
+                state.value.fingers shouldBe emptyMap()
+            }
+        }
+
+        test("escape is never a finger") {
+            runComposeUiTest {
+                val state = showTouch(keyboardFingers = true)
+                onRoot().performKeyInput { keyDown(Key.Escape) }
+                mainClock.advanceTimeByFrame()
+                state.value.fingers shouldBe emptyMap()
+            }
+        }
+
+        test("keys do nothing unless keyboard fingers are enabled") {
+            runComposeUiTest {
+                val state = showTouch()
+                onRoot().performKeyInput { keyDown(Key.A) }
+                mainClock.advanceTimeByFrame()
+                state.value.fingers shouldBe emptyMap()
             }
         }
     })

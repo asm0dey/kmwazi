@@ -28,6 +28,7 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -45,12 +46,22 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.github.asm0dey.kmwazi.Palette
 import com.github.asm0dey.kmwazi.resources.Res
@@ -66,6 +77,7 @@ import com.github.asm0dey.kmwazi.round.Point
 import com.github.asm0dey.kmwazi.round.Result
 import com.github.asm0dey.kmwazi.round.RoundState
 import org.jetbrains.compose.resources.stringResource
+import kotlin.random.Random
 
 @Composable
 fun TouchScreen(
@@ -77,15 +89,31 @@ fun TouchScreen(
     onReset: () -> Unit,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
+    keyboardFingers: Boolean = false,
 ) {
     val haptic = LocalHapticFeedback.current
     val latestOnFingers by rememberUpdatedState(onFingers)
     val pressed = remember { mutableSetOf<Long>() }
+    // Pointer fingers and (desktop) held-key fingers are merged into one finger set.
+    val touch = remember { mutableMapOf<Long, Point>() }
+    val keys = remember { mutableMapOf<Long, Point>() }
+    var size by remember { mutableStateOf(IntSize.Zero) }
+    val margin = with(LocalDensity.current) { (RADIUS * 1.2f).toPx() }
+    val focus = remember { FocusRequester() }
+
+    fun emit() {
+        val points = touch + keys
+        if ((points.keys - pressed).isNotEmpty()) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        pressed.clear()
+        pressed.addAll(points.keys)
+        latestOnFingers(points)
+    }
     var sheetOpen by remember { mutableStateOf(false) }
 
     // The VM survives activity recreation (e.g. rotation) but the in-progress gesture does not:
     // clear fingers so a rotation never leaves a stale, un-liftable finger armed for a result.
     DisposableEffect(Unit) { onDispose { latestOnFingers(emptyMap()) } }
+    if (keyboardFingers) LaunchedEffect(Unit) { focus.requestFocus() }
 
     val pulse by rememberInfiniteTransition(label = "pulse").animateFloat(
         initialValue = 1f,
@@ -121,12 +149,34 @@ fun TouchScreen(
             .semantics {
                 liveRegion = LiveRegionMode.Polite
                 contentDescription = announcement
-            }.multiTouch { points ->
-                if ((points.keys - pressed).isNotEmpty()) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                pressed.clear()
-                pressed.addAll(points.keys)
-                latestOnFingers(points)
-            },
+            }.onSizeChanged { size = it }
+            .multiTouch { points ->
+                touch.clear()
+                touch.putAll(points)
+                emit()
+            }.then(
+                if (keyboardFingers) {
+                    Modifier
+                        .focusRequester(focus)
+                        .focusable()
+                        .onPreviewKeyEvent { e ->
+                            // Esc stays "back"; OS key repeat re-sends KeyDown for a held key, so only new keys count.
+                            if (e.key == Key.Escape) return@onPreviewKeyEvent false
+                            val id = KEY_FINGER_BASE + e.key.keyCode
+                            when (e.type) {
+                                KeyEventType.KeyDown ->
+                                    if (id !in keys) {
+                                        keys[id] = randomSpot(size, margin)
+                                        emit()
+                                    }
+                                KeyEventType.KeyUp -> if (keys.remove(id) != null) emit()
+                            }
+                            true
+                        }
+                } else {
+                    Modifier
+                },
+            ),
     ) {
         FingerCanvas(state, palette, pulse, grow.value, fade.value)
         Button(onClick = { sheetOpen = true }, modifier = Modifier.padding(16.dp)) {
@@ -158,4 +208,19 @@ fun TouchScreen(
             )
         }
     }
+}
+
+// Key fingers get ids far above real pointer ids so the two never collide.
+private const val KEY_FINGER_BASE = 1L shl 40
+
+// ponytail: uniform random spot; spots may overlap, fine for a dev-only keyboard stand-in.
+private fun randomSpot(
+    size: IntSize,
+    margin: Float,
+): Point {
+    fun axis(extent: Int): Float {
+        val room = extent - 2 * margin
+        return if (room > 0) margin + Random.nextFloat() * room else extent / 2f
+    }
+    return Point(axis(size.width), axis(size.height))
 }

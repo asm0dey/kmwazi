@@ -31,12 +31,12 @@ import java.io.File
 import java.security.SecureRandom
 import kotlin.random.asKotlinRandom
 
-// Dev/test window only; never packaged or released.
+// Dev/test window only; never packaged or released. Held keys stand in for fingers (no multi-touch on desktop).
 fun main() {
     val dir = File(System.getProperty("user.home"), ".kmwazi").apply { mkdirs() }
     val settings = Settings(File(dir, "settings.preferences_pb").absolutePath)
     val vm = RoundViewModel(settings, SecureRandom().asKotlinRandom())
     application {
-        Window(onCloseRequest = ::exitApplication, title = "Kmwazi") { App(settings, vm) }
+        Window(onCloseRequest = ::exitApplication, title = "Kmwazi") { App(settings, vm, keyboardFingers = true) }
     }
 }

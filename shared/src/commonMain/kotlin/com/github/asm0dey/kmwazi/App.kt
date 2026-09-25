@@ -50,6 +50,7 @@ enum class Screen { Home, Touch, Settings, Help }
 fun App(
     settings: Settings,
     vm: RoundViewModel,
+    keyboardFingers: Boolean = false,
 ) {
     val prefs by settings.prefs.collectAsState(Prefs())
     val scope = rememberCoroutineScope()
@@ -87,6 +88,7 @@ fun App(
                         onMode = vm::setMode,
                         onReset = { vm.send(Event.Reset) },
                         onClose = { go(Screen.Home) },
+                        keyboardFingers = keyboardFingers,
                     )
                 }
                 Screen.Settings ->

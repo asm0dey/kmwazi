@@ -43,7 +43,7 @@ import com.github.asm0dey.kmwazi.round.Result
 import com.github.asm0dey.kmwazi.round.RoundState
 import kotlin.math.hypot
 
-private val RADIUS = 40.dp
+internal val RADIUS = 40.dp
 
 @Composable
 fun FingerCanvas(
