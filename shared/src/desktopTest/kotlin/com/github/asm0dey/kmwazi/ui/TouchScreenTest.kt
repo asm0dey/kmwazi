@@ -112,6 +112,24 @@ class TouchScreenTest :
             }
         }
 
+        test("a pointer that starts on a button never becomes a finger, even with jitter") {
+            runComposeUiTest {
+                val state = showTouch()
+                onRoot().performTouchInput { down(0, spots[0]) }
+                mainClock.advanceTimeByFrame()
+                val armedAfterCanvasDown = state.value.armed
+                val buttonCenter = onNodeWithText("Mode: Choose One").fetchSemanticsNode().boundsInRoot.center
+                onRoot().performTouchInput {
+                    down(1, buttonCenter)
+                    moveBy(1, Offset(2f, 0f))
+                    moveBy(0, Offset(2f, 0f))
+                }
+                mainClock.advanceTimeByFrame()
+                state.value.fingers.keys shouldBe setOf(0L)
+                state.value.armed shouldBe armedAfterCanvasDown
+            }
+        }
+
         test("fingers are gray in groups mode until the result") {
             runComposeUiTest {
                 showTouch(RoundState(Mode.Groups(2)))

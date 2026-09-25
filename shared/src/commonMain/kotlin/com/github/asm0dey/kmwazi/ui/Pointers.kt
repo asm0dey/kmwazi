@@ -27,24 +27,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import com.github.asm0dey.kmwazi.round.Point
 
-// Reports the full set of pressed pointers whenever it changes. Pointers already consumed by a
-// child (a button) are dropped, so tapping controls never counts as a finger.
+// Reports the full set of pressed pointers whenever it changes. A pointer whose down (or any
+// later) event is consumed by a child (a button) is dropped and stays ignored for the rest of
+// its gesture: consumption is per-PointerEvent, so a button only consumes down/up, not moves —
+// without sticky tracking, an unconsumed move for that same pointer id would slip through and
+// turn a button touch into a phantom finger.
 fun Modifier.multiTouch(onChange: (Map<Long, Point>) -> Unit): Modifier =
     pointerInput(Unit) {
         awaitEachGesture {
             val down = linkedMapOf<Long, Point>()
+            val ignored = mutableSetOf<Long>()
             do {
                 val event = awaitPointerEvent()
                 val before = down.toMap()
                 event.changes.forEach { c ->
-                    if (c.isConsumed || !c.pressed) {
-                        down.remove(c.id.value)
-                    } else {
-                        down[c.id.value] = Point(c.position.x, c.position.y)
+                    val id = c.id.value
+                    when {
+                        !c.pressed -> {
+                            down.remove(id)
+                            ignored.remove(id)
+                        }
+                        id in ignored -> Unit
+                        c.isConsumed -> {
+                            ignored.add(id)
+                            down.remove(id)
+                        }
+                        else -> down[id] = Point(c.position.x, c.position.y)
                     }
                 }
                 if (down != before) onChange(down.toMap())
             } while (event.changes.any { it.pressed })
-            if (down.isNotEmpty()) onChange(emptyMap())
         }
     }
