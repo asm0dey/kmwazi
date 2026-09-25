@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "kmwazi"
-include(":app", ":shared")
+include(":app", ":shared", ":desktopApp")

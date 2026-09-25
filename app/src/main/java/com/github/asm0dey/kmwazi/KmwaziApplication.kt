@@ -20,19 +20,12 @@
  *
  */
 
-package com.github.asm0dey.kmwazi.domain
+package com.github.asm0dey.kmwazi
 
-import java.security.SecureRandom
-import java.util.Collections
+import android.app.Application
 
-/**
- * Production implementation of RandomProvider using SecureRandom for cryptographically secure randomness.
- */
-class SecureRandomProvider : RandomProvider {
-    private val rng = SecureRandom()
-
-    override fun nextInt(bound: Int): Int = rng.nextInt(bound)
-
-    override fun <T> shuffle(list: List<T>): List<T> =
-        list.toMutableList().also { Collections.shuffle(it, rng) }
+class KmwaziApplication : Application() {
+    // One DataStore per file per process: created here, not in the Activity, so rotation can't open a second one.
+    // Same file 1.3.0's preferencesDataStore(name = "settings") wrote, so upgrades keep settings.
+    val settings by lazy { Settings(filesDir.resolve("datastore/settings.preferences_pb").absolutePath) }
 }

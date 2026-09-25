@@ -20,29 +20,23 @@
  *
  */
 
-package com.github.asm0dey.kmwazi.domain
+package com.github.asm0dey.kmwazi.desktop
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import androidx.compose.ui.window.Window
+import androidx.compose.ui.window.application
+import com.github.asm0dey.kmwazi.App
+import com.github.asm0dey.kmwazi.RoundViewModel
+import com.github.asm0dey.kmwazi.Settings
+import java.io.File
+import java.security.SecureRandom
+import kotlin.random.asKotlinRandom
 
-class SecureRandomProviderTest {
-    @Test
-    fun `shuffle returns a permutation of the input`() {
-        val provider = SecureRandomProvider()
-        val input = (1L..100L).toList()
-
-        val result = provider.shuffle(input)
-
-        assertEquals("shuffle must preserve every element", input.toSet(), result.toSet())
-        assertEquals("shuffle must not change size", input.size, result.size)
-    }
-
-    @Test
-    fun `nextInt stays within bound`() {
-        val provider = SecureRandomProvider()
-        repeat(1000) {
-            val n = provider.nextInt(10)
-            assert(n in 0 until 10) { "nextInt(10) returned $n" }
-        }
+// Dev/test window only; never packaged or released.
+fun main() {
+    val dir = File(System.getProperty("user.home"), ".kmwazi").apply { mkdirs() }
+    val settings = Settings(File(dir, "settings.preferences_pb").absolutePath)
+    val vm = RoundViewModel(settings, SecureRandom().asKotlinRandom())
+    application {
+        Window(onCloseRequest = ::exitApplication, title = "Kmwazi") { App(settings, vm) }
     }
 }
