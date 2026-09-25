@@ -42,6 +42,7 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 private fun fingers(vararg ids: Long) = Event.FingersChanged(ids.associateWith { Point(it.toFloat(), 0f) })
 
@@ -61,10 +62,10 @@ class RoundViewModelTest :
                     )
                 runCurrent()
                 vm.send(fingers(1, 2))
-                advanceTimeBy(4_999)
+                advanceTimeBy(4_999.milliseconds)
                 vm.state.value.outcome
                     .shouldBeNull()
-                advanceTimeBy(2)
+                advanceTimeBy(2.milliseconds)
                 vm.state.value.outcome
                     .shouldNotBeNull()
             }
@@ -75,12 +76,12 @@ class RoundViewModelTest :
                 val vm = RoundViewModel(Settings(MemoryStore()), Random(0))
                 runCurrent()
                 vm.send(fingers(1))
-                advanceTimeBy(2_000)
+                advanceTimeBy(2_000.milliseconds)
                 vm.send(fingers(1, 2))
-                advanceTimeBy(2_999)
+                advanceTimeBy(2_999.milliseconds)
                 vm.state.value.outcome
                     .shouldBeNull()
-                advanceTimeBy(2)
+                advanceTimeBy(2.milliseconds)
                 vm.state.value.outcome
                     .shouldNotBeNull()
             }
