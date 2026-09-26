@@ -12,7 +12,7 @@
     <string name="settings_timeout_increase">Timeout erhöhen</string>
     <string name="settings_close">Schließen</string>
 
-    <string name="help_text">Legen Sie die Finger auf den Bildschirm. Die App wird nach der Stabilisierung auswählen, gruppieren oder ordnen.</string>
+    <string name="help_text">Legen Sie die Finger auf den Bildschirm und lassen Sie sie liegen. Nach Ablauf der Wartezeit wählt, gruppiert oder ordnet die App.</string>
 
     <string name="touch_winner_selected">Gewinner ausgewählt</string>
     <string name="touch_groups_formed">Gruppen gebildet</string>

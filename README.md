@@ -9,7 +9,7 @@ Kmwazi is a multi-touch randomizer app for Android, inspired by Chwazi. It helps
 - Choose One: Randomly selects a single person from the group.
 - Split into Groups: Divides participants into groups of a specified size (2–10); the last group gets whoever is left over.
 - Define Order: Assigns a random sequence to all participants.
-- Customizable stabilization timeout (1 to 10 seconds).
+- Customizable timeout (1 to 10 seconds).
 - Multiple color palettes for visual variety.
 - High-contrast, accessible design.
 

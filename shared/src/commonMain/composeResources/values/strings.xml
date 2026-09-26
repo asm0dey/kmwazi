@@ -33,7 +33,7 @@
     <string name="settings_timeout_increase">Increase timeout</string>
     <string name="settings_close">Close</string>
 
-    <string name="help_text">Place fingers on the screen. App will choose, group, or order after stabilization.</string>
+    <string name="help_text">Place fingers on the screen and keep them down. After the timeout the app will choose, group, or order.</string>
 
     <string name="touch_winner_selected">Winner selected</string>
     <string name="touch_groups_formed">Groups formed</string>

@@ -4,13 +4,13 @@ Funktionen:
 - Einen auswählen: Wählt zufällig eine einzelne Person aus der Gruppe aus.
 - In Gruppen aufteilen: Teilt die Teilnehmer in Gruppen einer bestimmten Größe auf.
 - Reihenfolge festlegen: Weist allen Teilnehmern eine zufällige Sequenz zu.
-- Anpassbarer Stabilisierungs-Timeout (1 bis 10 Sekunden).
+- Anpassbare Wartezeit (1 bis 10 Sekunden).
 - Mehrere Farbpaletten für visuelle Vielfalt.
 - Kontrastreiches, barrierefreies Design.
 
 Anwendung:
 1. Starten Sie die App und tippen Sie auf dem Startbildschirm auf "Start".
-2. Wählen Sie oben auf dem Bildschirm den gewünschten Modus aus: "Einen auswählen", "Gruppen" oder "Reihenfolge".
+2. Tippen Sie auf die Modus-Schaltfläche oben links und wählen Sie "Einen auswählen", "Gruppen" oder "Reihenfolge".
 3. Lassen Sie jeden einen Finger auf den Bildschirm legen.
-4. Halten Sie Ihre Finger still. Die App startet einen Countdown, sobald sich die Berührungen stabilisiert haben.
+4. Lassen Sie die Finger auf dem Bildschirm. Der Countdown beginnt neu, sobald jemand einen Finger hinzufügt oder anhebt; es werden mindestens zwei Finger benötigt.
 5. Sobald der Countdown abgelaufen ist, wird das Ergebnis mit Animationen und Farben angezeigt.

@@ -71,7 +71,7 @@ class AppTest :
                 onNodeWithText("Help").performClick()
                 mainClock.advanceTimeBy(100)
                 onNodeWithText(
-                    "Place fingers on the screen. App will choose, group, or order after stabilization.",
+                    "Place fingers on the screen and keep them down. After the timeout the app will choose, group, or order.",
                 ).assertExists()
                 onNodeWithContentDescription("Close").performClick()
                 mainClock.advanceTimeBy(100)
