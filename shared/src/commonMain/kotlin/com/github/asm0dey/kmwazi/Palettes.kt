@@ -87,7 +87,7 @@ object Palettes {
                 Color(0xFFF9A828),
                 Color(0xFF4E9F3D),
                 Color(0xFF950101),
-                Color(0xFF191919),
+                Color(0xFFEEEEEE),
                 Color(0xFF005A8D),
             ),
         )
@@ -96,7 +96,6 @@ object Palettes {
             "colorblind",
             Res.string.palette_colorblind,
             listOf(
-                Color(0xFF000000),
                 Color(0xFFE69F00),
                 Color(0xFF56B4E9),
                 Color(0xFF009E73),

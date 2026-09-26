@@ -22,6 +22,7 @@
 
 package com.github.asm0dey.kmwazi
 
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.ui.graphics.Color
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.floats.shouldBeGreaterThanOrEqual
@@ -35,10 +36,17 @@ class PaletteTest :
             }
         }
 
+        test("every palette colour stands out from the dark background") {
+            val surface = darkColorScheme().surface
+            Palettes.All.flatMap { it.colors }.forEach { c ->
+                contrast(c, surface) shouldBeGreaterThanOrEqual 2f
+            }
+        }
+
         test("light colours get black labels, dark colours white") {
             labelColor(Color.White) shouldBe Color.Black
             labelColor(Color(0xFFFFDE7D)) shouldBe Color.Black
-            labelColor(Color(0xFF191919)) shouldBe Color.White
+            labelColor(Color(0xFF000000)) shouldBe Color.White
         }
 
         test("palette colours wrap past the palette size") {
