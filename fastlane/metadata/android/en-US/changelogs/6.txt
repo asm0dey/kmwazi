@@ -1,0 +1,1 @@
+A result now needs at least two fingers. Colorblind and Lucid palettes no longer have near-black colours that were hard to see.
