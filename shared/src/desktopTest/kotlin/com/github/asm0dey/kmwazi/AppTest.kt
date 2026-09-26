@@ -61,6 +61,7 @@ class AppTest :
                 onNodeWithText("Settings").performClick()
                 mainClock.advanceTimeBy(100)
                 onNodeWithText("Select color palette").assertExists()
+                onNodeWithText("Timeout:").assertExists()
                 onNodeWithText("3s").assertExists()
                 onNodeWithContentDescription("Increase timeout").performClick()
                 mainClock.advanceTimeBy(100)
@@ -71,7 +72,7 @@ class AppTest :
                 onNodeWithText("Help").performClick()
                 mainClock.advanceTimeBy(100)
                 onNodeWithText(
-                    "Place fingers on the screen. App will choose, group, or order after stabilization.",
+                    "Place at least two fingers on the screen and keep them down. After the timeout the app will choose, group, or order.",
                 ).assertExists()
                 onNodeWithContentDescription("Close").performClick()
                 mainClock.advanceTimeBy(100)

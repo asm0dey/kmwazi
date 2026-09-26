@@ -23,14 +23,21 @@
 package com.github.asm0dey.kmwazi
 
 import androidx.compose.runtime.internal.StabilityInferred
+import com.tngtech.archunit.base.DescribedPredicate
+import com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.belongToAnyOf
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.equivalentTo
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage
 import com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAnyPackage
+import com.tngtech.archunit.core.domain.JavaMethodCall
 import com.tngtech.archunit.core.importer.ClassFileImporter
+import com.tngtech.archunit.lang.ArchRule
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes
 import com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
+import kotlin.random.Random
 
 class ArchitectureTest :
     FunSpec({
@@ -77,10 +84,90 @@ class ArchitectureTest :
         }
 
         test("randomness comes only from entry points") {
-            noClasses()
-                .should()
-                .dependOnClassesThat()
-                .resideInAPackage("java.security..")
-                .check(production)
+            noGlobalRandomness.check(production)
+        }
+
+        test("the randomness rule catches every global source") {
+            listOf(
+                UsesDefault::class,
+                UsesCompanionAsValue::class,
+                UsesUnseededShuffled::class,
+                UsesUnseededShuffle::class,
+                UsesSeededRandom::class,
+                UsesMathRandom::class,
+                UsesThreadLocalRandom::class,
+                UsesCollectionsShuffle::class,
+            ).forEach { fixture ->
+                withClue(fixture.simpleName) {
+                    shouldThrow<AssertionError> {
+                        noGlobalRandomness.check(ClassFileImporter().importClasses(fixture.java))
+                    }
+                }
+            }
         }
     })
+
+private val unseededRandomCall =
+    object : DescribedPredicate<JavaMethodCall>("an unseeded shuffle, Random(seed) or Math.random") {
+        override fun test(call: JavaMethodCall): Boolean {
+            val owner = call.target.owner.name
+            val name = call.target.name
+            val takesRandom = call.target.rawParameterTypes.any { it.isAssignableTo(Random::class.java) }
+            return (owner.startsWith("kotlin.collections.") && name in SHUFFLES && !takesRandom) ||
+                (owner == "java.util.Collections" && name == "shuffle" && call.target.rawParameterTypes.size == 1) ||
+                (owner == "kotlin.random.RandomKt" && name == "Random") ||
+                (owner == "java.lang.Math" && name == "random")
+        }
+    }
+
+private val SHUFFLES = setOf("shuffle", "shuffled")
+
+// ADR 0001: the only randomness in :shared is the Random passed in from the platform shell.
+// ponytail: covers the stdlib/JDK entry points we know of; add a fixture + clause if a new one turns up.
+private val noGlobalRandomness: ArchRule =
+    noClasses()
+        .should()
+        .dependOnClassesThat(
+            resideInAPackage("java.security..")
+                .or(equivalentTo(Random.Default::class.java))
+                .or(assignableTo(java.util.Random::class.java)),
+        ).orShould()
+        .accessField(Random::class.java, "Default")
+        .orShould()
+        .callMethodWhere(unseededRandomCall)
+
+// Each fixture reaches randomness without the injected Random; the rule must reject all of them.
+private object UsesDefault {
+    fun f() = Random.nextFloat()
+}
+
+private object UsesCompanionAsValue {
+    fun f(): Random = Random
+}
+
+private object UsesUnseededShuffled {
+    fun f() = listOf(1, 2).shuffled()
+}
+
+private object UsesUnseededShuffle {
+    fun f() = mutableListOf(1, 2).shuffle()
+}
+
+private object UsesSeededRandom {
+    fun f() = Random(1)
+}
+
+private object UsesMathRandom {
+    fun f() = Math.random()
+}
+
+private object UsesThreadLocalRandom {
+    fun f() =
+        java.util.concurrent.ThreadLocalRandom
+            .current()
+            .nextInt()
+}
+
+private object UsesCollectionsShuffle {
+    fun f() = java.util.Collections.shuffle(mutableListOf(1, 2))
+}

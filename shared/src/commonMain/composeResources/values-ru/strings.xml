@@ -7,12 +7,12 @@
 
     <string name="settings_palette_title">Выберите цветовую палитру</string>
     <string name="settings_palette_label">Выбрать палитру</string>
-    <string name="settings_timeout_label">Таймаут принятия решения:</string>
+    <string name="settings_timeout_label">Время ожидания:</string>
     <string name="settings_timeout_decrease">Уменьшить таймаут</string>
     <string name="settings_timeout_increase">Увеличить таймаут</string>
     <string name="settings_close">Закрыть</string>
 
-    <string name="help_text">Приложите пальцы к экрану. Приложение выберет, сгруппирует или упорядочит их после стабилизации.</string>
+    <string name="help_text">Приложите к экрану хотя бы два пальца и не убирайте их. По истечении времени ожидания приложение выберет, сгруппирует или упорядочит их.</string>
 
     <string name="touch_winner_selected">Победитель выбран</string>
     <string name="touch_groups_formed">Группы сформированы</string>

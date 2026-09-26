@@ -41,7 +41,7 @@ import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import com.github.asm0dey.kmwazi.Palettes
 import com.github.asm0dey.kmwazi.labelColor
-import com.github.asm0dey.kmwazi.round.Deal
+import com.github.asm0dey.kmwazi.round.Draw
 import com.github.asm0dey.kmwazi.round.Event
 import com.github.asm0dey.kmwazi.round.Mode
 import com.github.asm0dey.kmwazi.round.Result
@@ -53,7 +53,7 @@ import io.kotest.matchers.maps.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import kotlin.random.Random
 
-private val deal = Deal(Random(0))
+private val draw = Draw(Random(0))
 
 @OptIn(ExperimentalTestApi::class)
 private fun ComposeUiTest.showTouch(
@@ -63,7 +63,7 @@ private fun ComposeUiTest.showTouch(
     val state = mutableStateOf(initial)
 
     fun on(e: Event) {
-        state.value = reduce(state.value, e, deal)
+        state.value = reduce(state.value, e, draw)
     }
     mainClock.autoAdvance = false
     setContent {
@@ -174,7 +174,7 @@ class TouchScreenTest :
                 val state = showTouch()
                 onRoot().performTouchInput { spots.take(3).forEachIndexed { i, p -> down(i, p) } }
                 mainClock.advanceTimeByFrame()
-                state.value = reduce(state.value, Event.Expired(state.value.armed), deal)
+                state.value = reduce(state.value, Event.Expired(state.value.armed), draw)
                 mainClock.advanceTimeBy(1_200) // overlay: 800 ms grow + 300 ms fade
                 val winner = (state.value.outcome!!.result as Result.One).winner
                 state.value.outcome!!.snapshot.forEach { (id, finger) ->
@@ -189,7 +189,7 @@ class TouchScreenTest :
                 val state = showTouch(RoundState(Mode.Order))
                 onRoot().performTouchInput { spots.take(3).forEachIndexed { i, p -> down(i, p) } }
                 mainClock.advanceTimeByFrame()
-                state.value = reduce(state.value, Event.Expired(state.value.armed), deal)
+                state.value = reduce(state.value, Event.Expired(state.value.armed), draw)
                 mainClock.advanceTimeBy(1_200) // overlay: 800 ms grow + 300 ms fade
                 val fingers = state.value.outcome!!.snapshot
                 fingers.forEach { (_, finger) ->
@@ -204,7 +204,7 @@ class TouchScreenTest :
                 val state = showTouch(RoundState(Mode.Groups(2)))
                 onRoot().performTouchInput { spots.take(3).forEachIndexed { i, p -> down(i, p) } }
                 mainClock.advanceTimeByFrame()
-                state.value = reduce(state.value, Event.Expired(state.value.armed), deal)
+                state.value = reduce(state.value, Event.Expired(state.value.armed), draw)
                 mainClock.advanceTimeBy(1_200) // overlay: 800 ms grow + 300 ms fade
                 val result = state.value.outcome!!.result as Result.Groups
                 val fingers = state.value.outcome!!.snapshot
@@ -224,7 +224,7 @@ class TouchScreenTest :
                 val visible = mutableStateOf(true)
 
                 fun on(e: Event) {
-                    state.value = reduce(state.value, e, deal)
+                    state.value = reduce(state.value, e, draw)
                 }
                 mainClock.autoAdvance = false
                 setContent {
@@ -271,7 +271,7 @@ class TouchScreenTest :
                     down(1, spots[1])
                 }
                 mainClock.advanceTimeByFrame()
-                state.value = reduce(state.value, Event.Expired(state.value.armed), deal)
+                state.value = reduce(state.value, Event.Expired(state.value.armed), draw)
                 mainClock.advanceTimeBy(1_200)
                 onRoot().performTouchInput {
                     up(0)

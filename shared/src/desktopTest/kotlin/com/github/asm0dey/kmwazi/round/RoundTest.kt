@@ -29,9 +29,9 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import kotlin.random.Random
 
-private val deal = Deal(Random(0))
+private val draw = Draw(Random(0))
 
-private fun RoundState.on(vararg events: Event): RoundState = events.fold(this) { s, e -> reduce(s, e, deal) }
+private fun RoundState.on(vararg events: Event): RoundState = events.fold(this) { s, e -> reduce(s, e, draw) }
 
 private fun touch(vararg ids: Long) = Event.FingersChanged(ids.associateWith { Point(it * 10f, 0f) })
 
@@ -60,11 +60,28 @@ class RoundTest :
             next.getValue(3L).colorIndex shouldBe 0
         }
 
-        test("a matching expiry deals and locks with a snapshot") {
+        test("a matching expiry draws and locks with a snapshot") {
             val s = start.on(touch(1, 2)).expire()
             val outcome = s.outcome.shouldNotBeNull()
             outcome.snapshot.keys shouldBe setOf(1L, 2L)
             (outcome.result as Result.One).winner shouldBeIn listOf(1L, 2L)
+        }
+
+        test("a single finger never gets a result") {
+            val s = start.on(touch(1))
+            s.expire().outcome.shouldBeNull()
+        }
+
+        test("a finger lifting before the timeout leaves one finger and no result") {
+            val s = start.on(touch(1, 2), touch(1))
+            s.expire().outcome.shouldBeNull()
+        }
+
+        test("a lone finger after a locked round starts a round that draws nothing") {
+            val locked = start.on(touch(1, 2)).expire()
+            val s = locked.on(touch(), touch(3)).expire()
+            s.outcome.shouldBeNull()
+            s.fingers.keys shouldBe setOf(3L)
         }
 
         test("a stale expiry is ignored") {
@@ -95,7 +112,7 @@ class RoundTest :
             s.armed shouldBe locked.armed + 2
         }
 
-        test("an expiry while locked does not deal again") {
+        test("an expiry while locked does not draw again") {
             val locked = start.on(touch(1, 2)).expire()
             locked.expire() shouldBe locked
         }

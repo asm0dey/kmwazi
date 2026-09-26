@@ -35,13 +35,13 @@ import io.kotest.property.arbitrary.set
 import io.kotest.property.checkAll
 import kotlin.random.Random
 
-class DealTest :
+class DrawTest :
     FunSpec({
         val fingerIds = Arb.set(Arb.long(), 1..30).map { it.toList() }
 
         test("groups contain every finger exactly once and all but the last group are full") {
             checkAll(fingerIds, Arb.int(Mode.Groups.SIZES), Arb.long()) { ids, size, seed ->
-                val groups = Deal(Random(seed)).groups(ids, size)
+                val groups = Draw(Random(seed)).groups(ids, size)
                 groups.flatten() shouldContainExactlyInAnyOrder ids
                 groups.dropLast(1).forEach { it.size shouldBe size }
                 groups.last().size shouldBeInRange 1..size
@@ -49,25 +49,25 @@ class DealTest :
         }
 
         test("fewer fingers than the group size make one group with everyone") {
-            Deal(Random(1)).groups(listOf(1L, 2L), 4).single() shouldContainExactlyInAnyOrder listOf(1L, 2L)
+            Draw(Random(1)).groups(listOf(1L, 2L), 4).single() shouldContainExactlyInAnyOrder listOf(1L, 2L)
         }
 
         test("order is a permutation of the fingers") {
             checkAll(fingerIds, Arb.long()) { ids, seed ->
-                Deal(Random(seed)).order(ids) shouldContainExactlyInAnyOrder ids
+                Draw(Random(seed)).order(ids) shouldContainExactlyInAnyOrder ids
             }
         }
 
         test("choose one returns one of the fingers") {
             checkAll(fingerIds, Arb.long()) { ids, seed ->
-                Deal(Random(seed)).chooseOne(ids) shouldBeIn ids
+                Draw(Random(seed)).chooseOne(ids) shouldBeIn ids
             }
         }
 
-        test("deal follows the mode") {
-            val deal = Deal(Random(1))
-            deal.deal(Mode.ChooseOne, listOf(5L)) shouldBe Result.One(5L)
-            deal.deal(Mode.Groups(2), listOf(5L)) shouldBe Result.Groups(listOf(listOf(5L)))
-            deal.deal(Mode.Order, listOf(5L)) shouldBe Result.Order(listOf(5L))
+        test("draw follows the mode") {
+            val draw = Draw(Random(1))
+            draw.draw(Mode.ChooseOne, listOf(5L)) shouldBe Result.One(5L)
+            draw.draw(Mode.Groups(2), listOf(5L)) shouldBe Result.Groups(listOf(listOf(5L)))
+            draw.draw(Mode.Order, listOf(5L)) shouldBe Result.Order(listOf(5L))
         }
     })

@@ -7,12 +7,12 @@
 
     <string name="settings_palette_title">Farbpalette wählen</string>
     <string name="settings_palette_label">Palette wählen</string>
-    <string name="settings_timeout_label">Entscheidungs-Timeout:</string>
+    <string name="settings_timeout_label">Wartezeit:</string>
     <string name="settings_timeout_decrease">Timeout verringern</string>
     <string name="settings_timeout_increase">Timeout erhöhen</string>
     <string name="settings_close">Schließen</string>
 
-    <string name="help_text">Legen Sie die Finger auf den Bildschirm. Die App wird nach der Stabilisierung auswählen, gruppieren oder ordnen.</string>
+    <string name="help_text">Legen Sie mindestens zwei Finger auf den Bildschirm und lassen Sie sie liegen. Nach Ablauf der Wartezeit wählt, gruppiert oder ordnet die App.</string>
 
     <string name="touch_winner_selected">Gewinner ausgewählt</string>
     <string name="touch_groups_formed">Gruppen gebildet</string>

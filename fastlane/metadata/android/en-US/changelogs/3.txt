@@ -1,0 +1,2 @@
+Your chosen colour palette is now kept after restarting the app.
+Updated libraries.

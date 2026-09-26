@@ -35,6 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # F-Droid flags unverified wrappers; fail fast if gradle-wrapper.jar is not an official Gradle build.
+      - uses: gradle/actions/wrapper-validation@v6
+
       # Set Current Date As Env Variable
       - name: Set current date as env variable
         run: echo "date_today=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
@@ -78,22 +81,8 @@ jobs:
       - name: Run tests with Fastlane
         run: bundle exec fastlane test
 
-      # Run Build Project
-      - name: Build gradle project
-        run: ./gradlew build -x test
-
-      # Create APK Debug
-      - name: Build apk debug project (APK) - ${{ env.main_project_module }} module
-        run: ./gradlew assembleDebug
-
-      # Create APK Release
-      - name: Build apk release project (APK) - ${{ env.main_project_module }} module
-        run: ./gradlew assembleRelease
-
-      # Create Bundle AAB Release
-      # Noted for main module build [main_project_module]:bundleRelease
-      - name: Build app bundle release (AAB) - ${{ env.main_project_module }} module
-        run: ./gradlew ${{ env.main_project_module }}:bundleRelease
+      - name: Build APKs and AAB
+        run: ./gradlew assemble ${{ env.main_project_module }}:bundleRelease
 
       # Upload Artifact Build
       # Noted For Output [main_project_module]/build/outputs/apk/debug/

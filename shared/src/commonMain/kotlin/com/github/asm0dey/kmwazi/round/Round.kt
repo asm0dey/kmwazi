@@ -63,17 +63,18 @@ sealed interface Event {
 fun reduce(
     state: RoundState,
     event: Event,
-    deal: Deal,
+    draw: Draw,
 ): RoundState =
     when (event) {
         is Event.FingersChanged -> onFingers(state, event.points)
         is Event.Expired ->
-            if (event.armed != state.armed || state.outcome != null || state.fingers.isEmpty()) {
+            // A Draw needs at least two Fingers; one Finger alone carries no information.
+            if (event.armed != state.armed || state.outcome != null || state.fingers.size < 2) {
                 state
             } else {
                 state.copy(
                     outcome =
-                        Outcome(deal.deal(state.mode, state.fingers.keys.toList()), state.fingers),
+                        Outcome(draw.draw(state.mode, state.fingers.keys.toList()), state.fingers),
                 )
             }
         Event.Reset -> fresh(state.mode, state)
