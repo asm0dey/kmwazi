@@ -56,7 +56,8 @@ class RoundTest :
             val s = start.on(touch(1, 2), touch())
             s.fingers shouldBe emptyMap()
             s.expire().outcome.shouldBeNull()
-            s.on(touch(3)).fingers.getValue(3L).colorIndex shouldBe 0
+            val next = s.on(touch(3)).fingers
+            next.getValue(3L).colorIndex shouldBe 0
         }
 
         test("a matching expiry deals and locks with a snapshot") {
