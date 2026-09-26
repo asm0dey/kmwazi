@@ -2,8 +2,11 @@
 
 1. Bump `versionCode` / `versionName` in `app/build.gradle.kts` and add a `CHANGELOG.md` entry.
 2. `bundle exec fastlane test` — must pass (ktlint, license headers, Android lint, all tests, ArchUnit).
-3. Manual checks on a real phone (`./gradlew :app:installRelease`):
+3. Manual checks on a real phone. Export `KMWAZI_KEYSTORE`, `KMWAZI_KEYSTORE_PASSWORD`, `KMWAZI_KEY_ALIAS`
+   and `KMWAZI_KEY_PASSWORD` first; without them the release build is unsigned and won't install.
+   Then `./gradlew :app:installRelease`:
    - 5+ fingers: every finger gets a circle; the countdown restarts when a finger is added or lifted.
+   - One finger alone: no result, however long it stays down.
    - Result appears after the configured timeout; the overlay grows and fades out in about a second.
    - Lift everyone, touch again: a new round starts.
    - Tapping the mode button, Reset or ✕ never adds a circle.
