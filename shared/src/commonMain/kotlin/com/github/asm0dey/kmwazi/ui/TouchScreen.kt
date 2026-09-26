@@ -77,7 +77,6 @@ import com.github.asm0dey.kmwazi.round.Point
 import com.github.asm0dey.kmwazi.round.Result
 import com.github.asm0dey.kmwazi.round.RoundState
 import org.jetbrains.compose.resources.stringResource
-import kotlin.random.Random
 
 @Composable
 fun TouchScreen(
@@ -166,7 +165,7 @@ fun TouchScreen(
                             when (e.type) {
                                 KeyEventType.KeyDown ->
                                     if (id !in keys) {
-                                        keys[id] = randomSpot(size, margin)
+                                        keys[id] = keySpot(e.key.keyCode, size, margin)
                                         emit()
                                     }
                                 KeyEventType.KeyUp -> if (keys.remove(id) != null) emit()
@@ -213,14 +212,19 @@ fun TouchScreen(
 // Key fingers get ids far above real pointer ids so the two never collide.
 private const val KEY_FINGER_BASE = 1L shl 40
 
-// ponytail: uniform random spot; spots may overlap, fine for a dev-only keyboard stand-in.
-private fun randomSpot(
+// ponytail: golden-ratio spread by key code instead of randomness; spots may overlap, fine for a
+// dev-only keyboard stand-in. Keeps :shared free of global Random (ADR 0001).
+private fun keySpot(
+    keyCode: Long,
     size: IntSize,
     margin: Float,
 ): Point {
-    fun axis(extent: Int): Float {
+    fun axis(
+        extent: Int,
+        step: Double,
+    ): Float {
         val room = extent - 2 * margin
-        return if (room > 0) margin + Random.nextFloat() * room else extent / 2f
+        return if (room > 0) margin + ((keyCode * step) % 1.0).toFloat() * room else extent / 2f
     }
-    return Point(axis(size.width), axis(size.height))
+    return Point(axis(size.width, 0.6180339887), axis(size.height, 0.7548776662))
 }

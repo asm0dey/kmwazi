@@ -79,8 +79,10 @@ class ArchitectureTest :
         test("randomness comes only from entry points") {
             noClasses()
                 .should()
-                .dependOnClassesThat()
-                .resideInAPackage("java.security..")
-                .check(production)
+                .dependOnClassesThat(
+                    resideInAPackage("java.security..")
+                        .or(equivalentTo(kotlin.random.Random.Default::class.java))
+                        .or(equivalentTo(java.util.Random::class.java)),
+                ).check(production)
         }
     })
