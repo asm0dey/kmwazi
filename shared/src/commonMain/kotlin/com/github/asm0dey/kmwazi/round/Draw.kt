@@ -24,7 +24,7 @@ package com.github.asm0dey.kmwazi.round
 
 import kotlin.random.Random
 
-class Deal(
+class Draw(
     private val random: Random,
 ) {
     fun chooseOne(ids: List<Long>): Long = ids.random(random)
@@ -36,7 +36,7 @@ class Deal(
 
     fun order(ids: List<Long>): List<Long> = ids.shuffled(random)
 
-    fun deal(
+    fun draw(
         mode: Mode,
         ids: List<Long>,
     ): Result =

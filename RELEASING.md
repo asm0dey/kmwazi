@@ -10,7 +10,7 @@
    - Groups mode: circles gray before the result, group numbers readable after; Order: numbers readable.
    - Change mode while fingers are down: the round resets.
    - Rotate on the touch screen: no crash.
-   - Rotate with fingers down: the round resets, no result is dealt for fingers nobody holds.
+   - Rotate with fingers down: the round resets, no result is drawn for fingers nobody holds.
 4. Upgrade check (only when settings code changed): install the previous Play version, choose Pastel,
    Groups of 4 and 7 s, then install the new build over it — all three must survive.
 5. Fresh-install check: uninstall, install, change a setting, kill and reopen — the setting is kept.

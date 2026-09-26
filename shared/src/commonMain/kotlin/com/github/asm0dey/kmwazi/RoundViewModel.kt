@@ -24,7 +24,7 @@ package com.github.asm0dey.kmwazi
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.github.asm0dey.kmwazi.round.Deal
+import com.github.asm0dey.kmwazi.round.Draw
 import com.github.asm0dey.kmwazi.round.Event
 import com.github.asm0dey.kmwazi.round.Mode
 import com.github.asm0dey.kmwazi.round.RoundState
@@ -46,7 +46,7 @@ class RoundViewModel(
     private val settings: Settings,
     random: Random,
 ) : ViewModel() {
-    private val deal = Deal(random)
+    private val draw = Draw(random)
     private val _state = MutableStateFlow(RoundState(Mode.ChooseOne))
     val state: StateFlow<RoundState> = _state.asStateFlow()
 
@@ -55,7 +55,7 @@ class RoundViewModel(
             val mode = settings.prefs.first().mode
             // Only apply the persisted mode if no round activity has happened yet (armed == 0);
             // otherwise this stale read would clobber a finger/mode event the caller already sent.
-            _state.update { if (it.armed == 0) reduce(it, Event.ModeChanged(mode), deal) else it }
+            _state.update { if (it.armed == 0) reduce(it, Event.ModeChanged(mode), draw) else it }
         }
         // Every armed value gets its own countdown; collectLatest cancels the previous one.
         viewModelScope.launch {
@@ -71,7 +71,7 @@ class RoundViewModel(
     }
 
     fun send(event: Event) {
-        _state.update { reduce(it, event, deal) }
+        _state.update { reduce(it, event, draw) }
     }
 
     fun setMode(mode: Mode) {

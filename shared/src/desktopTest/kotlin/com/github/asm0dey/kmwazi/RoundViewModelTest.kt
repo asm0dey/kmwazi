@@ -53,7 +53,7 @@ class RoundViewModelTest :
         beforeTest { Dispatchers.setMain(main) }
         afterTest { Dispatchers.resetMain() }
 
-        test("deals once the stored timeout has passed") {
+        test("draws once the stored timeout has passed") {
             runTest(main) {
                 val vm =
                     RoundViewModel(

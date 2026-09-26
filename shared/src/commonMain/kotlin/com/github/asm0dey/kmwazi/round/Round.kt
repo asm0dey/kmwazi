@@ -63,7 +63,7 @@ sealed interface Event {
 fun reduce(
     state: RoundState,
     event: Event,
-    deal: Deal,
+    draw: Draw,
 ): RoundState =
     when (event) {
         is Event.FingersChanged -> onFingers(state, event.points)
@@ -73,7 +73,7 @@ fun reduce(
             } else {
                 state.copy(
                     outcome =
-                        Outcome(deal.deal(state.mode, state.fingers.keys.toList()), state.fingers),
+                        Outcome(draw.draw(state.mode, state.fingers.keys.toList()), state.fingers),
                 )
             }
         Event.Reset -> fresh(state.mode, state)
