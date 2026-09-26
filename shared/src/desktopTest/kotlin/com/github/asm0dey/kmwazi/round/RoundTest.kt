@@ -55,8 +55,9 @@ class RoundTest :
         test("lifting every finger before a result cancels the countdown and restarts colours") {
             val s = start.on(touch(1, 2), touch())
             s.fingers shouldBe emptyMap()
-            s.nextColor shouldBe 0
             s.expire().outcome.shouldBeNull()
+            val next = s.on(touch(3)).fingers
+            next.getValue(3L).colorIndex shouldBe 0
         }
 
         test("a matching expiry deals and locks with a snapshot") {
@@ -104,9 +105,18 @@ class RoundTest :
                 RoundState(Mode.Order, armed = 2)
         }
 
-        test("new fingers take colours in arrival order and keep them") {
+        test("new fingers take the lowest free colour and keep it") {
             val s = start.on(touch(1), touch(1, 2), touch(2), touch(2, 3))
-            s.fingers.mapValues { it.value.colorIndex } shouldBe mapOf(2L to 1, 3L to 2)
+            s.fingers.mapValues { it.value.colorIndex } shouldBe mapOf(2L to 1, 3L to 0)
+        }
+
+        test("tapping a third finger never collides with the two held down") {
+            var s = start.on(touch(1, 2))
+            for (id in 3L..20L) {
+                s = s.on(touch(1, 2, id), touch(1, 2))
+            }
+            s.on(touch(1, 2, 21)).fingers.mapValues { it.value.colorIndex } shouldBe
+                mapOf(1L to 0, 2L to 1, 21L to 2)
         }
 
         test("colour indices keep counting past the palette size") {

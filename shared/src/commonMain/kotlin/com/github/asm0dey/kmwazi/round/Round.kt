@@ -40,7 +40,6 @@ data class Outcome(
 data class RoundState(
     val mode: Mode,
     val fingers: Map<Long, Finger> = emptyMap(),
-    val nextColor: Int = 0,
     val armed: Int = 0,
     val outcome: Outcome? = null,
 )
@@ -98,12 +97,16 @@ private fun onFingers(
             else -> state.copy(fingers = points.mapValues { (_, p) -> Finger(p, 0) })
         }
     }
-    var next = state.nextColor
+    // A new finger takes the lowest colour no finger still down is using, so lifted colours come back.
+    val used = points.keys.mapNotNullTo(mutableSetOf()) { state.fingers[it]?.colorIndex }
     val fingers =
-        points.mapValues { (id, p) -> state.fingers[id]?.copy(pos = p) ?: Finger(p, next++) }
-    return when {
-        fingers.keys == state.fingers.keys -> state.copy(fingers = fingers)
-        fingers.isEmpty() -> state.copy(fingers = fingers, nextColor = 0, armed = state.armed + 1)
-        else -> state.copy(fingers = fingers, nextColor = next, armed = state.armed + 1)
+        points.mapValues { (id, p) ->
+            state.fingers[id]?.copy(pos = p)
+                ?: Finger(p, generateSequence(0) { it + 1 }.first { it !in used }.also { used += it })
+        }
+    return if (fingers.keys == state.fingers.keys) {
+        state.copy(fingers = fingers)
+    } else {
+        state.copy(fingers = fingers, armed = state.armed + 1)
     }
 }
