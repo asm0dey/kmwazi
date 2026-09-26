@@ -68,7 +68,8 @@ fun reduce(
     when (event) {
         is Event.FingersChanged -> onFingers(state, event.points)
         is Event.Expired ->
-            if (event.armed != state.armed || state.outcome != null || state.fingers.isEmpty()) {
+            // A Draw needs at least two Fingers; one Finger alone carries no information.
+            if (event.armed != state.armed || state.outcome != null || state.fingers.size < 2) {
                 state
             } else {
                 state.copy(

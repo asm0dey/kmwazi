@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- A result needs at least two fingers on the screen; a single finger no longer wins by itself.
+
 ## 2.0.1
 
 - A new finger takes a colour no other finger on the screen is using; colours of lifted fingers are reused.

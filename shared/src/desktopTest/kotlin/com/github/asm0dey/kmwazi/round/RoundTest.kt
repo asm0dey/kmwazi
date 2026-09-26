@@ -67,6 +67,23 @@ class RoundTest :
             (outcome.result as Result.One).winner shouldBeIn listOf(1L, 2L)
         }
 
+        test("a single finger never gets a result") {
+            val s = start.on(touch(1))
+            s.expire().outcome.shouldBeNull()
+        }
+
+        test("a finger lifting before the timeout leaves one finger and no result") {
+            val s = start.on(touch(1, 2), touch(1))
+            s.expire().outcome.shouldBeNull()
+        }
+
+        test("a lone finger after a locked round starts a round that draws nothing") {
+            val locked = start.on(touch(1, 2)).expire()
+            val s = locked.on(touch(), touch(3)).expire()
+            s.outcome.shouldBeNull()
+            s.fingers.keys shouldBe setOf(3L)
+        }
+
         test("a stale expiry is ignored") {
             start.on(touch(1), touch(1, 2), Event.Expired(1)).outcome.shouldBeNull()
         }
