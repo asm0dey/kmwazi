@@ -6,7 +6,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## Unreleased
 
+## 2.0.2
+
 - A result needs at least two fingers on the screen; a single finger no longer wins by itself.
+- Colorblind and Lucid palettes no longer contain near-black colours that vanish on the dark background.
 
 ## 2.0.1
 
