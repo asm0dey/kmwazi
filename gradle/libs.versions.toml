@@ -1,7 +1,7 @@
 [versions]
 agp = "9.4.1"
-kotlin = "2.4.20"
-compose-multiplatform = "1.12.1"
+kotlin = "2.4.21"
+compose-multiplatform = "1.12.2"
 compose-material3 = "1.9.0"
 androidx-activity = "1.13.0"
 coreKtx = "1.19.1"
@@ -10,7 +10,7 @@ androidx-datastore = "1.2.1"
 okio = "3.18.2"
 kotlinx-coroutines = "1.11.0"
 navigationevent = "1.1.0"
-kotest = "6.2.5"
+kotest = "6.2.6"
 archunit = "1.5.1"
 ktlint = "14.2.0"
 
